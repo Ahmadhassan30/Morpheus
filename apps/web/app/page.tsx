@@ -132,29 +132,35 @@ export default function HomePage() {
   return (
     <div className="min-h-screen relative flex flex-col font-sans">
       <header
-        className="fixed left-0 right-0 top-0 z-[100] flex h-[110px] w-full items-center justify-center px-6 md:h-[120px] md:px-10 shrink-0"
         style={{
-          background: "transparent",
-          position: "fixed",
-          transform: "translateZ(0)"
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          height: '72px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.9)',
+          padding: '0 40px',
         }}
       >
         <img
           src="/logo.png"
           alt="Morpheus"
-          className="h-[74px] w-auto max-h-full object-contain md:h-[96px]"
           style={{
-            position: "fixed",
-            top: "8px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 120,
-            pointerEvents: "none"
+            height: '52px',
+            width: 'auto',
+            objectFit: 'contain',
           }}
         />
       </header>
 
-      <main className="flex-1 flex flex-col pt-[110px] md:pt-[120px]">
+      <main className="flex-1 flex flex-col pt-[72px]">
         <section className="flex flex-col items-center justify-center px-[40px] pb-[32px] pt-[48px] text-center">
           <div className="mb-6 rounded-full bg-[var(--accent-light)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">
             AI-POWERED WIREFRAME TO CODE
