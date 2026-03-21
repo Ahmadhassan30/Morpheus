@@ -101,27 +101,30 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 
 	const copyDisabled = code.trim().length === 0;
 
+	const detectedName = getComponentName(cleanedCode) ?? "component";
+	const fileName = detectedName.charAt(0).toLowerCase() + detectedName.slice(1) + ".tsx";
+
 	return (
 		<div className="relative flex flex-col">
 			{/* Top bar */}
 			<div
 				className="flex items-center justify-between px-4 py-3"
 				style={{
-					background: "#1A1A18",
+					background: "linear-gradient(to right, #1A1A18, #2A2A28)",
 					borderRadius: "12px 12px 0 0"
 				}}
 			>
 				<div className="flex items-center gap-3">
 					<div className="flex items-center gap-1.5">
-						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#FF5F57" }} />
-						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#FFBD2E" }} />
-						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#28C840" }} />
+						<div className="h-[12px] w-[12px] rounded-full" style={{ background: "#FF5F57" }} />
+						<div className="h-[12px] w-[12px] rounded-full" style={{ background: "#FFBD2E" }} />
+						<div className="h-[12px] w-[12px] rounded-full" style={{ background: "#28C840" }} />
 					</div>
 					<div
 						className="ml-2 text-[12px] font-medium"
 						style={{ color: "#6B6B63", fontFamily: "monospace" }}
 					>
-						Dashboard.tsx
+						{fileName}
 					</div>
 				</div>
 
@@ -179,7 +182,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 						fontSize: "13px",
 						fontFamily: '"Fira Code", "Cascadia Code", monospace',
 						minHeight: "300px",
-						maxHeight: "520px",
+						maxHeight: "calc(45vh - 60px)",
 						overflowY: "auto",
 						margin: 0
 					}}
@@ -192,20 +195,27 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			<button
 				type="button"
 				onClick={() => setShowPreview((v) => !v)}
-				className="mt-[12px] w-full border px-[16px] py-[8px] text-[13px] font-[500] transition-colors"
+				className="mt-[12px] w-full transition-colors"
 				style={{
-					border: "1px solid #E4E4DF",
-					background: "white",
-					color: "#6B6B63",
+					padding: "10px 20px",
+					fontSize: "14px",
+					fontWeight: "600",
+					border: showPreview ? "1px solid rgba(124, 58, 237, 0.3)" : "1px solid #E4E4DF",
+					background: showPreview ? "rgba(124, 58, 237, 0.08)" : "white",
+					color: showPreview ? "#7C3AED" : "#6B6B63",
 					borderRadius: "8px"
 				}}
 				onMouseEnter={(e) => {
-					e.currentTarget.style.borderColor = "#7C3AED";
-					e.currentTarget.style.color = "#7C3AED";
+					if (!showPreview) {
+						e.currentTarget.style.borderColor = "#7C3AED";
+						e.currentTarget.style.color = "#7C3AED";
+					}
 				}}
 				onMouseLeave={(e) => {
-					e.currentTarget.style.borderColor = "#E4E4DF";
-					e.currentTarget.style.color = "#6B6B63";
+					if (!showPreview) {
+						e.currentTarget.style.borderColor = "#E4E4DF";
+						e.currentTarget.style.color = "#6B6B63";
+					}
 				}}
 			>
 				{showPreview ? "HIDE PREVIEW" : "SHOW PREVIEW"}
@@ -213,12 +223,13 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 
 			{/* Preview Box */}
 			{showPreview && (
-				<div className="mt-[12px]">
+				<div className="mt-[12px] flex flex-col gap-2">
+					<div className="text-[11px] font-semibold text-[#9D9D93] tracking-widest pl-1">LIVE PREVIEW</div>
 					<iframe
 						srcDoc={buildPreviewHTML(cleanedCode)}
 						style={{
 							width: "100%",
-							height: "500px",
+							height: "calc(55vh - 20px)",
 							border: "1px solid #E4E4DF",
 							borderRadius: "0 0 12px 12px",
 							background: "white"

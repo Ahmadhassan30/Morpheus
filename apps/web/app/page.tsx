@@ -131,10 +131,18 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen relative flex flex-col font-sans">
-      <header className="flex h-[56px] w-full items-center justify-between border-b px-10 bg-[var(--bg-surface)] border-[var(--border)] shrink-0">
+      <header
+        className="sticky top-0 z-50 flex h-[56px] w-full items-center justify-between px-10 shrink-0"
+        style={{
+          background: "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.9)"
+        }}
+      >
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-sm bg-[var(--accent)]" />
-          <span className="text-[16px] font-bold text-[var(--text-primary)]">Morpheus</span>
+          <span className="text-[18px] font-[800] text-[var(--text-primary)]">Morpheus</span>
         </div>
         <div className="rounded-[4px] bg-[var(--accent-light)] px-2 py-[2px] text-[11px] font-semibold uppercase text-[var(--accent)] tracking-wide">
           BETA
@@ -142,18 +150,24 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1 flex flex-col">
-        <section className="flex flex-col items-center justify-center px-10 pb-[48px] pt-[80px] text-center">
+        <section className="flex flex-col items-center justify-center px-[40px] pb-[32px] pt-[48px] text-center">
           <div className="mb-6 rounded-full bg-[var(--accent-light)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">
             AI-POWERED WIREFRAME TO CODE
           </div>
-          <h1 className="text-[56px] font-[800] leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)]">
+          <h1 className="text-[64px] font-[800] leading-[1.05] tracking-[-0.03em] text-[var(--text-primary)]">
             From sketch to<br/>
-            <span className="relative inline-block">
+            <span
+              className="relative inline-block"
+              style={{
+                background: "linear-gradient(135deg, #7C3AED, #A855F7)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+              }}
+            >
               production
-              <span className="absolute bottom-2 left-0 -z-10 h-3 w-full bg-[var(--accent-light)]" />
             </span> code.
           </h1>
-          <p className="mt-5 text-[18px] font-[400] text-[var(--text-secondary)]">
+          <p className="mt-5 text-[20px] font-[400] text-[var(--text-secondary)]">
             Upload a wireframe. Get clean Next.js + Tailwind code instantly.
           </p>
           <div className="mt-8 flex items-center gap-2 text-[12px] text-[var(--text-hint)]">
@@ -165,17 +179,31 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[1200px] px-10 pb-16">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section className="w-full px-[32px] pb-[48px]">
+          <div className="grid grid-cols-5 gap-6">
             
-            <div className="flex flex-col rounded-[12px] border border-[var(--border)] bg-[var(--bg-surface)] p-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+            <div className="col-span-2 flex flex-col glass-panel p-[28px]">
               <div className="mb-4 flex items-center gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">01</span>
-                <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Upload wireframe</h2>
+                <span className="text-[13px] font-semibold uppercase tracking-widest text-[var(--accent)]">01</span>
+                <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Upload wireframe</h2>
               </div>
 
               <div
-                className="group relative flex h-[200px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[12px] border-2 border-dashed border-[var(--border)] bg-[var(--bg-page)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-light)] focus:border-[var(--accent)] focus:bg-[var(--accent-light)] outline-none"
+                className="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden transition-all outline-none"
+                style={{
+                  height: "220px",
+                  borderRadius: "12px",
+                  border: "2px dashed rgba(124, 58, 237, 0.25)",
+                  background: "rgba(124, 58, 237, 0.03)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.5)";
+                  e.currentTarget.style.background = "rgba(124, 58, 237, 0.06)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.25)";
+                  e.currentTarget.style.background = "rgba(124, 58, 237, 0.03)";
+                }}
                 onClick={handleBrowse}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
@@ -200,12 +228,12 @@ export default function HomePage() {
                   <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
                 ) : (
                   <>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
                       <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <div className="text-[14px] font-medium text-[var(--text-primary)]">Drop your wireframe here</div>
-                    <div className="mt-1 text-[12px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
+                    <div className="text-[16px] font-[600] text-[var(--text-primary)]">Drop your wireframe here</div>
+                    <div className="mt-1 text-[13px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
                   </>
                 )}
               </div>
@@ -217,23 +245,45 @@ export default function HomePage() {
               )}
 
               <div className="mb-4 mt-8 flex items-center gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">02</span>
-                <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Describe your wireframe</h2>
+                <span className="text-[13px] font-semibold uppercase tracking-widest text-[var(--accent)]">02</span>
+                <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Describe your wireframe</h2>
               </div>
 
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                rows={5}
                 placeholder="E.g. A dashboard with a sidebar navigation and three stat cards at the top..."
-                className="w-full resize-none rounded-[8px] border border-[var(--border)] bg-[var(--bg-surface)] px-[14px] py-[12px] text-[14px] text-[var(--text-primary)] outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
+                className="w-full resize-none rounded-[8px] border border-[var(--border)] bg-white outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
+                style={{
+                  fontSize: "15px",
+                  padding: "14px 16px"
+                }}
               />
 
               <button
                 type="button"
                 onClick={handleGenerate}
                 disabled={!canGenerate}
-                className="mt-6 flex h-[48px] w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--accent)] text-[15px] font-semibold text-white transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:pointer-events-none disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-[var(--accent)]"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[8px] text-white transition-all disabled:pointer-events-none disabled:opacity-50"
+                style={{
+                  height: "52px",
+                  fontSize: "16px",
+                  fontWeight: "700",
+                  background: "linear-gradient(135deg, #7C3AED, #9333EA)"
+                }}
+                onMouseEnter={(e) => {
+                  if (canGenerate) {
+                    e.currentTarget.style.background = "linear-gradient(135deg, #6D28D9, #7C3AED)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px rgba(124, 58, 237, 0.35)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (canGenerate) {
+                    e.currentTarget.style.background = "linear-gradient(135deg, #7C3AED, #9333EA)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
               >
                 {isLoading ? (
                   <>
@@ -255,15 +305,24 @@ export default function HomePage() {
               )}
             </div>
 
-            <div className="flex flex-col h-full rounded-[12px] border border-[var(--border)] bg-[var(--bg-surface)] p-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+            <div className="col-span-3 flex flex-col glass-panel p-[28px]" style={{ minHeight: "calc(100vh - 280px)" }}>
               {code.length === 0 && !isLoading ? (
-                <div className="flex flex-1 flex-col items-center justify-center text-center py-[100px]">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "calc(100vh - 340px)"
+                  }}
+                  className="text-center"
+                >
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)]">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--accent)]">
                       <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h3 className="text-[16px] font-medium text-[var(--text-primary)]">Your component will appear here</h3>
+                  <h3 className="text-[16px] font-[500] text-[var(--text-primary)]">Your component will appear here</h3>
                   <p className="mt-1 text-[13px] text-[var(--text-hint)]">Generate a component to see the output</p>
                 </div>
               ) : (
@@ -275,8 +334,17 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="w-full border-t border-[var(--border)] bg-[var(--bg-page)] py-[40px] text-center">
-        <div className="text-[12px] text-[var(--text-hint)]">
+      <footer
+        className="w-full py-[40px] text-center"
+        style={{
+          background: "rgba(255, 255, 255, 0.5)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.8)",
+          fontSize: "13px"
+        }}
+      >
+        <div className="text-[var(--text-hint)]">
           Built with LangChain · Qdrant · Groq · Next.js
         </div>
       </footer>
