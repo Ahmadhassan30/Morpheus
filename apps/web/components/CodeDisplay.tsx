@@ -3,108 +3,21 @@
 import { useEffect, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { transform } from "sucrase";
+import { SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
 
 export interface CodeDisplayProps {
 	code: string;
 	isStreaming: boolean;
 }
 
-// Extract component name in TypeScript (safe, outside template literal)
-function getComponentName(code: string): string | null {
-	const patterns = [
-		/function\s+([A-Za-z_$][\w$]*)\s*\(/,
-		/class\s+([A-Za-z_$][\w$]*)\s+extends\s+(?:React\.)?Component/,
-		/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*\(|\(|function\b|React\.memo|forwardRef)/,
-		/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[^=]*=>/
-	];
-	for (const pattern of patterns) {
-		const match = code.match(pattern);
-		if (match) return match[1];
-	}
-	return null;
-}
-
-function buildPreviewHTML(code: string): string {
-	const cleanCode = code
+function cleanCode(raw: string): string {
+	return raw
 		.replace(/^```[\w]*\n?/gm, "")
 		.replace(/^```$/gm, "")
 		.replace(/^["']use client["']\s*;?\s*/gm, "")
-		// Strip single-line, multiline, and side-effect imports before browser eval.
-		.replace(/^\s*import\s+[\s\S]*?from\s+["'][^"']+["']\s*;?\s*/gm, "")
-		.replace(/^\s*import\s+["'][^"']+["']\s*;?\s*/gm, "")
-		.replace(/^export\s+default\s+/gm, "")
-		.replace(/^export\s+/gm, "")
+		.replace(/^import\s+.*$/gm, "")
 		.trim();
-
-	const componentName = getComponentName(cleanCode) ?? "Component";
-
-	let transformedCode = cleanCode;
-	try {
-		const result = transform(cleanCode, {
-			transforms: ["typescript", "jsx"],
-			jsxPragma: "React.createElement",
-			jsxFragmentPragma: "React.Fragment",
-			production: false
-		});
-		transformedCode = result.code;
-	} catch (e) {
-		return buildErrorHTML("JSX transform failed: " + (e instanceof Error ? e.message : String(e)));
-	}
-
-	const fullScript = [
-		"const { useState, useEffect, useRef, useCallback, useMemo, Fragment } = React;",
-		"",
-		transformedCode,
-		"",
-		"try {",
-		"  const root = ReactDOM.createRoot(document.getElementById('root'));",
-		"  root.render(React.createElement(" + componentName + "));",
-		"} catch(e) {",
-		"  document.getElementById('root').innerHTML =",
-		"    '<div style=\"color:#DC2626;padding:16px;font-family:monospace;font-size:13px\">Render error: ' + e.message + '</div>';",
-		"}"
-	].join("\n");
-
-	return [
-		"<!DOCTYPE html>",
-		"<html>",
-		"<head>",
-		'  <meta charset="UTF-8" />',
-		'  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-		'  <script src="https://cdn.tailwindcss.com"><\/script>',
-		'  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>',
-		'  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>',
-		"  <style>body { margin: 0; padding: 16px; background: white; }<\/style>",
-		"<\/head>",
-		"<body>",
-		'  <div id="root"><\/div>',
-		"  <script>",
-		fullScript,
-		"  <\/script>",
-		"<\/body>",
-		"<\/html>"
-	].join("\n");
 }
-
-function buildErrorHTML(message: string): string {
-	return [
-		"<!DOCTYPE html><html><body>",
-		'<div style="color:#DC2626;padding:16px;font-family:monospace;font-size:13px">',
-		message,
-		"</div></body></html>"
-	].join("");
-}
-
-const COLORS = {
-	background: "#0a0a0a",
-	surface: "#111111",
-	border: "#2a2a2a",
-	text: "#f5f5f0",
-	muted: "#888884",
-	accent: "#D3FD50",
-	accentHover: "#bfe847"
-} as const;
 
 export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 	const [copied, setCopied] = useState<boolean>(false);
@@ -122,9 +35,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 		.trim();
 
 	const copyDisabled = code.trim().length === 0;
-
-	const detectedName = getComponentName(cleanedCode) ?? "component";
-	const fileName = detectedName.charAt(0).toLowerCase() + detectedName.slice(1) + ".tsx";
+	const fileName = "component.tsx";
 
 	return (
 		<div className="relative flex flex-col">
@@ -216,7 +127,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			{/* Preview Toggle */}
 			<button
 				type="button"
-				onClick={() => setShowPreview((v) => !v)}
+				onClick={() => setShowPreview(!showPreview)}
 				className="mt-[12px] w-full transition-colors"
 				style={{
 					padding: "10px 20px",
@@ -245,20 +156,47 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 
 			{/* Preview Box */}
 			{showPreview && (
-				<div className="mt-[12px] flex flex-col gap-2">
-					<div className="text-[11px] font-semibold text-[#9D9D93] tracking-widest pl-1">LIVE PREVIEW</div>
-					<iframe
-						srcDoc={buildPreviewHTML(cleanedCode)}
+				<div style={{ marginTop: "12px" }}>
+					<p
 						style={{
-							width: "100%",
-							height: "calc(55vh - 20px)",
-							border: "1px solid #E4E4DF",
-							borderRadius: "0 0 12px 12px",
-							background: "white"
+							fontSize: "11px",
+							color: "var(--color-text-tertiary)",
+							marginBottom: "8px",
+							fontFamily: "monospace",
+							letterSpacing: "0.08em"
 						}}
-						sandbox="allow-scripts"
-						title="Component preview"
-					/>
+					>
+						LIVE PREVIEW - powered by Sandpack
+					</p>
+					<SandpackProvider
+						template="react"
+						files={{
+							"/App.js": cleanCode(code)
+						}}
+						options={{
+							externalResources: ["https://cdn.tailwindcss.com"],
+							autorun: true,
+							autoReload: true
+						}}
+						theme="light"
+						customSetup={{
+							dependencies: {
+								react: "^18.0.0",
+								"react-dom": "^18.0.0"
+							}
+						}}
+					>
+						<SandpackPreview
+							style={{
+								height: "calc(55vh - 20px)",
+								border: "1px solid #E4E4DF",
+								borderRadius: "0 0 12px 12px"
+							}}
+							showNavigator={false}
+							showOpenInCodeSandbox={false}
+							showRefreshButton
+						/>
+					</SandpackProvider>
 				</div>
 			)}
 		</div>

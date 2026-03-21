@@ -78,7 +78,8 @@ Do NOT use backticks. Return raw JSX only, no \`\`\`jsx or \`\`\`tsx.
 5. No explanation before or after the code
 6. Use Tailwind utility classes only
 7. Make it fully responsive
-8. Use semantic HTML elements`
+8. Use semantic HTML elements
+9. CRITICAL: Always use: export default function ComponentName() {} at the end of your code. Sandpack requires a default export.`
 				},
 				{
 					role: "user",
