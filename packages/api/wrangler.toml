@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2025-03-21"
 compatibility_flags = ["nodejs_compat"]
 
+[dev]
+port = 8787
+local_protocol = "http"
+ip = "127.0.0.1"
+
 # Secrets — set via CLI before deploying:
 # npx wrangler secret put HF_API_KEY
 # npx wrangler secret put QDRANT_URL
