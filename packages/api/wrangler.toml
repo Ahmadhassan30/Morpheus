@@ -1,0 +1,11 @@
+name = "morpheus-api"
+main = "src/index.ts"
+compatibility_date = "2025-03-21"
+compatibility_flags = ["nodejs_compat"]
+
+# Secrets — set via CLI before deploying:
+# npx wrangler secret put HF_API_KEY
+# npx wrangler secret put QDRANT_URL
+# npx wrangler secret put QDRANT_API_KEY
+# npx wrangler secret put OPENROUTER_API_KEY
+# npx wrangler secret put GROQ_API_KEY

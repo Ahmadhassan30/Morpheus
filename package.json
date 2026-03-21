@@ -1,0 +1,11 @@
+{
+  "name": "morpheus",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=packages/api",
+    "build": "npm run build --workspace=apps/web",
+    "ingest": "npm run ingest --workspace=packages/api"
+  }
+}
