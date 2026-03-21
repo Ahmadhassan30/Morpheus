@@ -27,6 +27,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [appLoaded, setAppLoaded] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(1280);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -213,6 +214,15 @@ export default function HomePage() {
     } catch (e) {}
   };
   const logoSrc = theme === "dark" ? "/logo_dark.png" : "/logo.png";
+  const isMobile = viewportWidth < 768;
+  const isTablet = viewportWidth < 1100;
+
+  useEffect(() => {
+    const updateViewport = () => setViewportWidth(window.innerWidth);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   return (
     <>
@@ -279,17 +289,18 @@ export default function HomePage() {
             left: 0,
             right: 0,
             zIndex: 100,
-            height: 132,
+            height: isMobile ? 96 : isTablet ? 112 : 132,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "0 48px",
+            padding: isMobile ? "0 14px" : isTablet ? "0 24px" : "0 48px",
             borderBottom: "1px solid var(--border)",
             background: "var(--bg)"
           }}
         >
           <div
             style={{
+              display: isTablet ? "none" : "block",
               position: "absolute",
               left: 48,
               top: "50%",
@@ -318,7 +329,7 @@ export default function HomePage() {
               src={logoSrc}
               alt="Morpheus"
               style={{
-                height: "clamp(78px, 8vw, 100px)",
+                height: isMobile ? 52 : isTablet ? 68 : 84,
                 width: "auto",
                 objectFit: "contain",
                 filter: "drop-shadow(0 0 18px rgba(255,105,0,0.14))"
@@ -327,9 +338,9 @@ export default function HomePage() {
             <div
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: 18,
+                fontSize: isMobile ? 12 : 18,
                 fontWeight: 700,
-                letterSpacing: "0.22em",
+                letterSpacing: isMobile ? "0.16em" : "0.22em",
                 textTransform: "uppercase",
                 color: "var(--text-primary)",
                 lineHeight: 1
@@ -341,6 +352,7 @@ export default function HomePage() {
 
           <div
             style={{
+              display: isTablet ? "none" : "block",
               position: "absolute",
               right: 96,
               top: "50%",
@@ -360,7 +372,7 @@ export default function HomePage() {
             onClick={toggleTheme}
             style={{
               position: "absolute",
-              right: 48,
+              right: isMobile ? 14 : isTablet ? 24 : 48,
               width: 34,
               height: 34,
               border: "1px solid var(--border-mid)",
@@ -387,10 +399,10 @@ export default function HomePage() {
         {/* HERO */}
         <section
           style={{
-            paddingTop: 212,
-            paddingBottom: 64,
-            paddingLeft: 48,
-            paddingRight: 48
+            paddingTop: isMobile ? 144 : isTablet ? 176 : 212,
+            paddingBottom: isMobile ? 40 : 64,
+            paddingLeft: isMobile ? 16 : isTablet ? 24 : 48,
+            paddingRight: isMobile ? 16 : isTablet ? 24 : 48
           }}
         >
           <div
@@ -400,7 +412,7 @@ export default function HomePage() {
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               color: "var(--text-dim)",
-              marginBottom: 48,
+              marginBottom: isMobile ? 24 : 48,
               fontFamily: "var(--font-body)"
             }}
           >
@@ -412,7 +424,9 @@ export default function HomePage() {
               id="hero-line1"
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(80px, 13vw, 180px)",
+                fontSize: isMobile
+                  ? "clamp(44px, 15vw, 64px)"
+                  : "clamp(80px, 13vw, 180px)",
                 fontWeight: 800,
                 lineHeight: 0.88,
                 letterSpacing: "0.01em",
@@ -429,7 +443,9 @@ export default function HomePage() {
               id="hero-line2"
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(80px, 13vw, 180px)",
+                fontSize: isMobile
+                  ? "clamp(44px, 15vw, 64px)"
+                  : "clamp(80px, 13vw, 180px)",
                 fontWeight: 800,
                 lineHeight: 0.88,
                 letterSpacing: "0.01em",
@@ -446,7 +462,9 @@ export default function HomePage() {
               id="hero-line3"
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(80px, 13vw, 180px)",
+                fontSize: isMobile
+                  ? "clamp(44px, 15vw, 64px)"
+                  : "clamp(80px, 13vw, 180px)",
                 fontWeight: 800,
                 lineHeight: 0.88,
                 letterSpacing: "0.01em",
@@ -462,10 +480,10 @@ export default function HomePage() {
             id="hero-sub"
             style={{
               fontFamily: "var(--font-body)",
-              fontSize: 16,
+              fontSize: isMobile ? 14 : 16,
               fontWeight: 300,
               color: "var(--text-secondary)",
-              maxWidth: 420,
+              maxWidth: isMobile ? "100%" : 420,
               lineHeight: 1.75
             }}
           >
@@ -475,13 +493,19 @@ export default function HomePage() {
         </section>
 
         {/* DIVIDER */}
-        <div style={{ height: 1, background: "var(--border)", margin: "0 48px" }} />
+        <div
+          style={{
+            height: 1,
+            background: "var(--border)",
+            margin: isMobile ? "0 16px" : isTablet ? "0 24px" : "0 48px"
+          }}
+        />
 
         {/* MAIN WORK AREA */}
         <section
           id="main-panel"
           style={{
-            padding: "64px 48px",
+            padding: isMobile ? "32px 16px" : isTablet ? "48px 24px" : "64px 48px",
             maxWidth: 1440,
             margin: "0 auto"
           }}
@@ -509,7 +533,7 @@ export default function HomePage() {
             style={{
               background: "var(--bg)",
               border: "1px solid var(--border)",
-              padding: 40
+              padding: isMobile ? 16 : isTablet ? 24 : 40
             }}
           >
               {/* Upload zone */}
@@ -518,7 +542,7 @@ export default function HomePage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
                 style={{
-                  height: 196,
+                  height: isMobile ? 168 : 196,
                   border: "1px solid var(--border-mid)",
                   display: "flex",
                   flexDirection: "column",
@@ -662,12 +686,12 @@ export default function HomePage() {
                 disabled={!canGenerate}
                 style={{
                   width: "100%",
-                  height: 52,
+                  height: isMobile ? 48 : 52,
                   background: canGenerate ? "var(--accent)" : "var(--bg-card)",
                   color: canGenerate ? "var(--accent-text)" : "var(--text-dim)",
                   border: canGenerate ? "none" : "1px solid var(--border-mid)",
                   fontFamily: "var(--font-display)",
-                  fontSize: 24,
+                  fontSize: isMobile ? 20 : 24,
                   fontWeight: 800,
                   letterSpacing: "0.05em",
                   cursor: canGenerate ? "pointer" : "not-allowed",
@@ -754,15 +778,15 @@ export default function HomePage() {
               width: "100%",
               background: "var(--bg)",
               border: "1px solid var(--border)",
-              minHeight: 520,
-              padding: 32
+              minHeight: isMobile ? 360 : 520,
+              padding: isMobile ? 16 : 32
             }}
           >
             {code.length === 0 && !isLoading ? (
               <div
                 style={{
                   height: "100%",
-                  minHeight: 420,
+                  minHeight: isMobile ? 280 : 420,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -774,7 +798,7 @@ export default function HomePage() {
                 <div
                   style={{
                     fontFamily: "var(--font-display)",
-                    fontSize: 72,
+                    fontSize: isMobile ? 54 : 72,
                     color: "var(--text-dim)",
                     lineHeight: 1,
                     fontWeight: 800
@@ -805,16 +829,22 @@ export default function HomePage() {
         </section>
 
         {/* BOTTOM DIVIDER */}
-        <div style={{ height: 1, background: "var(--border)", margin: "0 48px" }} />
+        <div
+          style={{
+            height: 1,
+            background: "var(--border)",
+            margin: isMobile ? "0 16px" : isTablet ? "0 24px" : "0 48px"
+          }}
+        />
 
         {/* FOOTER */}
         <footer
           style={{
-            padding: "56px 48px",
+            padding: isMobile ? "36px 16px" : isTablet ? "44px 24px" : "56px 48px",
             display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : isTablet ? "1fr 1fr" : "1fr auto 1fr",
             alignItems: "end",
-            gap: 40
+            gap: isMobile ? 28 : 40
           }}
         >
           <div>
@@ -833,7 +863,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div style={{ textAlign: "center" }}>
+          <div style={{ textAlign: isMobile ? "left" : "center" }}>
             <div
               style={{
                 fontFamily: "var(--font-display)",
@@ -851,7 +881,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: isMobile ? "left" : "right" }}>
             <div
               style={{
                 fontSize: 10,
