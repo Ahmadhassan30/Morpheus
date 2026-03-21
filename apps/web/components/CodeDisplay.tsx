@@ -9,87 +9,69 @@ export interface CodeDisplayProps {
 	isStreaming: boolean;
 }
 
-function buildPreviewHTML(code: string): string {
-	// Strip import statements — browser doesn't need them
-	// Also strip common Markdown fences (```tsx ... ```), since the model may return them.
-	const lines = code.split(/\r?\n/);
-	const keptLines: string[] = [];
-	let skippingImport = false;
-
-	for (const line of lines) {
-		if (!skippingImport && /^\s*import\b/.test(line)) {
-			skippingImport = !/;\s*$/.test(line);
-			continue;
-		}
-
-		if (skippingImport) {
-			if (/;\s*$/.test(line)) skippingImport = false;
-			continue;
-		}
-
-		keptLines.push(line);
+// Extract component name in TypeScript (safe, outside template literal)
+function getComponentName(code: string): string | null {
+	const patterns = [
+		/function\s+([A-Z][a-zA-Z0-9]*)\s*\(/,
+		/const\s+([A-Z][a-zA-Z0-9]*)\s*=\s*(?:\(|React\.memo|forwardRef)/,
+		/var\s+([A-Z][a-zA-Z0-9]*)\s*=/
+	];
+	for (const pattern of patterns) {
+		const match = code.match(pattern);
+		if (match) return match[1];
 	}
+	return null;
+}
 
-	const cleanCode = keptLines
-		.join("\n")
-		.replace(/^\s*```[a-zA-Z0-9_-]*\s*$/gm, "")
-		.replace(/^\s*```\s*$/gm, "")
+function buildPreviewHTML(code: string): string {
+	const cleanCode = code
+		.replace(/^```[\w]*\n?/gm, "")
+		.replace(/^```$/gm, "")
+		.replace(/^import\s+.*$/gm, "")
 		.replace(/^export\s+default\s+/gm, "")
+		.replace(/^export\s+/gm, "")
 		.trim();
 
-	const cleanCodeForScript = cleanCode.replace(/<\/script>/gi, "<\\/script>");
+	const componentName = getComponentName(cleanCode);
 
 	return `<!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<script src="https://cdn.tailwindcss.com"><\/script>
-	<script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
-	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
-	<script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
-	<style>
-		body { margin: 0; padding: 16px; background: white; }
-	</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+  <style>
+    body { margin: 0; padding: 16px; background: white; }
+  </style>
 </head>
 <body>
-	<div id="root"></div>
-	<script type="text/babel">
-		${cleanCodeForScript}
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+    ${cleanCode}
 
-		const rootElement = document.getElementById('root');
-		const root = ReactDOM.createRoot(rootElement);
-
-		// Try to find and render the component
-		// In sandboxed iframes, some window properties (e.g. localStorage) throw on access.
-		const componentNames = Object.keys(window).filter((k) => {
-			if (!/^[A-Z]/.test(k)) return false;
-			if (k === 'React' || k === 'ReactDOM') return false;
+		(() => {
+			const root = ReactDOM.createRoot(document.getElementById('root'));
+			${componentName
+			? `
 			try {
-				return typeof window[k] === 'function';
-			} catch {
-				return false;
-			}
-		});
-
-		// Extract function name from code as fallback
-		const __source = ${JSON.stringify(cleanCode)};
-		const match = __source.match(/function\\s+([A-Z][a-zA-Z]*)/);
-		const name = match ? match[1] : null;
-		const fromName = name && typeof window[name] === 'function' ? window[name] : null;
-		const fromGlobals = componentNames.length > 0 ? window[componentNames[0]] : null;
-		const Component = fromName || fromGlobals;
-
-		if (Component) {
-			root.render(React.createElement(Component));
-		} else {
+				root.render(React.createElement(${componentName}));
+			} catch(e) {
+				root.render(React.createElement('div', {
+					style: { color: '#DC2626', padding: '16px', fontFamily: 'monospace', fontSize: '13px' }
+				}, 'Render error: ' + e.message));
+			}`
+			: `
 			root.render(React.createElement('div', {
-				style: { color: 'red', padding: '16px' }
-			}, 'Could not detect component name. Make sure the component is a named function.'));
+				style: { color: '#D97706', padding: '16px', fontFamily: 'monospace', fontSize: '13px' }
+			}, 'Could not detect component name. Ensure the code includes a named function like function Dashboard() {}'));`
 		}
-	<\/script>
+		})();
+  <\/script>
 </body>
-</html>`;
+</html>`
 }
 
 const COLORS = {
@@ -111,6 +93,11 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 		const t = window.setTimeout(() => setCopied(false), 2000);
 		return () => window.clearTimeout(t);
 	}, [copied]);
+
+	const cleanedCode = code
+		.replace(/^```[\w]*\n?/gm, "")
+		.replace(/^```$/gm, "")
+		.trim();
 
 	const copyDisabled = code.trim().length === 0;
 
@@ -197,7 +184,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 						margin: 0
 					}}
 				>
-					{code.length > 0 ? code : ""}
+					{cleanedCode.length > 0 ? cleanedCode : ""}
 				</SyntaxHighlighter>
 			</div>
 
@@ -228,7 +215,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			{showPreview && (
 				<div className="mt-[12px]">
 					<iframe
-						srcDoc={buildPreviewHTML(code)}
+						srcDoc={buildPreviewHTML(cleanedCode)}
 						style={{
 							width: "100%",
 							height: "500px",

@@ -69,13 +69,16 @@ Use these UI patterns as reference:
 ${args.context}
 
 Rules:
-1. Return ONLY the JSX component code
-2. No markdown fences or backticks
-3. No import statements
-4. No explanation before or after the code
-5. Use Tailwind utility classes only
-6. Make it fully responsive
-7. Use semantic HTML elements`
+CRITICAL: Do NOT wrap the output in markdown code fences.
+Do NOT use backticks. Return raw JSX only, no \`\`\`jsx or \`\`\`tsx.
+1. ALWAYS start the component with a named function declaration like: function ComponentName() { — never use anonymous functions or arrow functions at the top level
+2. Return ONLY the JSX component code
+3. No markdown fences or backticks
+4. No import statements
+5. No explanation before or after the code
+6. Use Tailwind utility classes only
+7. Make it fully responsive
+8. Use semantic HTML elements`
 				},
 				{
 					role: "user",
@@ -141,7 +144,13 @@ Rules:
 			const content =
 				obj.choices?.[0]?.delta?.content ?? obj.choices?.[0]?.message?.content;
 			if (typeof content === "string" && content.length > 0) {
-				await args.stream.write(content);
+				const sanitized = content
+					.replace(/```[a-zA-Z0-9_-]*/g, "")
+					.replace(/```/g, "")
+					.replace(/`/g, "");
+				if (sanitized.length > 0) {
+					await args.stream.write(sanitized);
+				}
 			}
 		}
 	}
