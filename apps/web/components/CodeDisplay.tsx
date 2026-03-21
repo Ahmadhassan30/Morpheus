@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { SandpackPreview, SandpackProvider } from "@codesandbox/sandpack-react";
+
+const SandpackProvider = dynamic(
+	() => import("@codesandbox/sandpack-react").then((m) => m.SandpackProvider),
+	{ ssr: false }
+);
+
+const SandpackPreview = dynamic(
+	() => import("@codesandbox/sandpack-react").then((m) => m.SandpackPreview),
+	{ ssr: false }
+);
 
 export interface CodeDisplayProps {
 	code: string;
@@ -199,7 +209,10 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 						options={{
 							externalResources: ["https://cdn.tailwindcss.com"],
 							autorun: true,
-							autoReload: true
+							autoReload: true,
+							recompileMode: "delayed",
+							recompileDelay: 500,
+							bundlerURL: undefined
 						}}
 						theme="light"
 						customSetup={{
