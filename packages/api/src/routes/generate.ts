@@ -51,6 +51,8 @@ async function streamGroqCompletion(args: {
 	stream: StreamingApi;
 }): Promise<void> {
 	const context = args.context;
+	// Groq free tier: 8192 max output tokens, 30 req/min, 500k tokens/day
+	// Lower temperature = deterministic output, less mid-generation drift
 	const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
 		method: "POST",
 		headers: {
@@ -61,32 +63,48 @@ async function streamGroqCompletion(args: {
 			model: "meta-llama/llama-4-scout-17b-16e-instruct",
 			stream: true,
 			max_tokens: 8192,
-			temperature: 0.2,
+			temperature: 0.1,
 			messages: [
 				{
 					role: "system",
-					content: `You are an expert Next.js and Tailwind CSS developer.
+					content: `You are an expert senior Next.js and Tailwind CSS developer.
+The user will provide a wireframe image and a description.
+Your job is to convert it into a complete, fully implemented
+Next.js component using Tailwind CSS utility classes.
 
 Use these UI patterns as reference:
 ${context}
 
-CRITICAL RULES — follow every single one without exception:
+CRITICAL OUTPUT RULES — follow without exception:
+1. Return ONLY raw JSX code — no markdown fences, no backticks,
+   no triple backticks, no language identifiers like jsx or tsx
+2. No explanation, no comments, no prose before or after the code
+3. NEVER use SVG path d="" attributes — they cause parse errors.
+   Use Unicode characters or text for icons instead: ✕ ← → ☰ ★
+4. NEVER use TypeScript type annotations — plain JavaScript only.
+   No interfaces, no : Type, no <Generic> syntax anywhere
+5. NEVER import from external packages except react.
+   No lucide-react, no heroicons, no framer-motion, no other imports
+6. Use only Tailwind classes — no style="" attributes anywhere
+7. Always end the file with exactly:
+   export default function ComponentName() {}
+   using a real descriptive name like Dashboard, Homepage, LoginForm
+8. Do NOT truncate — generate the COMPLETE component from the
+   opening function declaration to the closing export statement.
+   If the component is long, keep going until it is fully complete
+9. Every JSX tag you open must be properly closed before the
+   function ends
+10. Every string attribute value must open and close on the same line.
+    Never break a className or any attribute value across two lines
 
-1. Start with: export default function ComponentName() {
-2. Return a SINGLE root element wrapping everything
-3. Use ONLY simple Tailwind classes — no arbitrary values like w-[123px]
-4. Keep the component SHORT and SIMPLE — maximum 80 lines total
-5. NO SVG icons — use plain text or emoji instead of any <svg> tags
-6. NO complex nested ternaries
-7. NO TypeScript types or interfaces — plain JavaScript only
-8. Use placeholder text like "Link 1", "Button", "Title" — keep it minimal
-9. Every JSX tag must be properly closed
-10. Do NOT use lucide-react or any external icon library
-11. Do NOT include comments in the code
-12. Return ONLY the component code — no markdown fences, no explanation
-13. The entire component must fit in 60-80 lines maximum
-
-Keep it simple. A clean simple component is better than a complex broken one.`
+COMPONENT QUALITY RULES:
+- Generate the FULL component — every section visible in the wireframe
+- Use realistic placeholder content — real names, prices, dates, text
+- Make it fully responsive using sm: md: lg: Tailwind breakpoints
+- Include hover states: hover:bg-gray-100 on all interactive elements
+- Use semantic HTML: nav, main, section, aside, footer, article, header
+- The component must look like a real production UI, not a skeleton
+- Generate everything visible in the wireframe image — no skipping sections`
 				},
 				{
 					role: "user",

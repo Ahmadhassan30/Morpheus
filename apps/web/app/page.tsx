@@ -319,7 +319,11 @@ export default function HomePage() {
                   <p className="mt-1 text-[13px] text-[var(--text-hint)]">Generate a component to see the output</p>
                 </div>
               ) : (
-                <CodeDisplay code={code} isStreaming={isStreaming} />
+                <CodeDisplay
+                  code={code}
+                  isStreaming={isStreaming}
+                  autoShow={!isStreaming && code.length > 0}
+                />
               )}
             </div>
             

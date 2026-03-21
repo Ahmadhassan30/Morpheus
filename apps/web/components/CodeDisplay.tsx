@@ -18,6 +18,7 @@ const SandpackPreview = dynamic(
 export interface CodeDisplayProps {
 	code: string;
 	isStreaming: boolean;
+	autoShow?: boolean;
 }
 
 function cleanCode(raw: string): string {
@@ -46,16 +47,22 @@ function getPreviewCode(raw: string): string {
 	return base;
 }
 
-export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
+export function CodeDisplay({ code, isStreaming, autoShow }: CodeDisplayProps) {
 	const [copied, setCopied] = useState<boolean>(false);
 	const [showPreview, setShowPreview] = useState<boolean>(false);
-	const [previewSource, setPreviewSource] = useState<string>("export default function Component(){ return <div />; }");
+	const [previewHeight, setPreviewHeight] = useState("70vh");
 
 	useEffect(() => {
 		if (!copied) return;
 		const t = window.setTimeout(() => setCopied(false), 2000);
 		return () => window.clearTimeout(t);
 	}, [copied]);
+
+	useEffect(() => {
+		if (autoShow && code.length > 100 && !isStreaming) {
+			setShowPreview(true);
+		}
+	}, [autoShow, code, isStreaming]);
 
 	const cleanedCode = code
 		.replace(/^```[\w]*\n?/gm, "")
@@ -143,7 +150,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 						fontSize: "13px",
 						fontFamily: '"Fira Code", "Cascadia Code", monospace',
 						minHeight: "300px",
-						maxHeight: "calc(45vh - 60px)",
+						maxHeight: "280px",
 						overflowY: "auto",
 						margin: 0
 					}}
@@ -155,12 +162,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			{/* Preview Toggle */}
 			<button
 				type="button"
-				onClick={() => {
-					if (!showPreview) {
-						setPreviewSource(getPreviewCode(code));
-					}
-					setShowPreview(!showPreview);
-				}}
+				onClick={() => setShowPreview((prev) => !prev)}
 				className="mt-[12px] w-full transition-colors"
 				style={{
 					padding: "10px 20px",
@@ -190,21 +192,59 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			{/* Preview Box */}
 			{showPreview && (
 				<div style={{ marginTop: "12px" }}>
-					<p
+					<div
 						style={{
-							fontSize: "11px",
-							color: "var(--color-text-tertiary)",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							marginTop: "16px",
 							marginBottom: "8px",
-							fontFamily: "monospace",
-							letterSpacing: "0.08em"
 						}}
 					>
-						LIVE PREVIEW - powered by Sandpack
-					</p>
+						<span
+							style={{
+								fontSize: "11px",
+								fontWeight: 600,
+								letterSpacing: "0.08em",
+								color: "var(--color-text-tertiary)",
+								textTransform: "uppercase"
+							}}
+						>
+							Live preview
+						</span>
+						<div style={{ display: "flex", gap: "6px" }}>
+							{(["S", "M", "L"] as const).map((size) => (
+								<button
+									key={size}
+									onClick={() =>
+										setPreviewHeight(
+											size === "S" ? "400px" : size === "M" ? "70vh" : "100vh"
+										)
+									}
+									style={{
+										fontSize: "11px",
+										padding: "3px 10px",
+										border: "1px solid var(--color-border-tertiary)",
+										borderRadius: "4px",
+										background:
+											previewHeight ===
+											(size === "S" ? "400px" : size === "M" ? "70vh" : "100vh")
+												? "var(--color-background-tertiary)"
+												: "transparent",
+										color: "var(--color-text-secondary)",
+										cursor: "pointer",
+										fontWeight: 500
+									}}
+								>
+									{size}
+								</button>
+							))}
+						</div>
+					</div>
 					<SandpackProvider
 						template="react"
 						files={{
-							"/App.js": previewSource
+							"/App.js": getPreviewCode(code)
 						}}
 						options={{
 							externalResources: ["https://cdn.tailwindcss.com"],
@@ -224,13 +264,15 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 					>
 						<SandpackPreview
 							style={{
-								height: "calc(55vh - 20px)",
+								height: previewHeight,
+								minHeight: "500px",
 								border: "1px solid #E4E4DF",
-								borderRadius: "0 0 12px 12px"
+								borderRadius: "8px",
+								transition: "height 0.2s ease"
 							}}
 							showNavigator={false}
-							showOpenInCodeSandbox={false}
-							showRefreshButton
+							showOpenInCodeSandbox={true}
+							showRefreshButton={true}
 						/>
 					</SandpackProvider>
 				</div>
