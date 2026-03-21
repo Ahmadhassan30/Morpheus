@@ -212,7 +212,16 @@ export function CodeDisplay({ code, isStreaming, autoShow }: CodeDisplayProps) {
 
 			{/* Preview Box */}
 			{showPreview && (
-				<div style={{ marginTop: "12px" }}>
+				<div
+					style={{
+						marginTop: "12px",
+						width: "100vw",
+						marginLeft: "calc(50% - 50vw)",
+						paddingLeft: "24px",
+						paddingRight: "24px",
+						boxSizing: "border-box"
+					}}
+				>
 					<div
 						style={{
 							display: "flex",

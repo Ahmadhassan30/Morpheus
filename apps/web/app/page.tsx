@@ -132,17 +132,29 @@ export default function HomePage() {
   return (
     <div className="min-h-screen relative flex flex-col font-sans">
       <header
-        className="fixed top-0 left-0 right-0 z-50 flex h-[120px] w-full items-center justify-center px-10 shrink-0"
-        style={{ background: "transparent" }}
+        className="fixed left-0 right-0 top-0 z-[100] flex h-[110px] w-full items-center justify-center px-6 md:h-[120px] md:px-10 shrink-0"
+        style={{
+          background: "transparent",
+          position: "fixed",
+          transform: "translateZ(0)"
+        }}
       >
         <img
           src="/logo.png"
           alt="Morpheus"
-          className="h-[96px] w-auto max-h-full object-contain"
+          className="h-[74px] w-auto max-h-full object-contain md:h-[96px]"
+          style={{
+            position: "fixed",
+            top: "8px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 120,
+            pointerEvents: "none"
+          }}
         />
       </header>
 
-      <main className="flex-1 flex flex-col pt-[120px]">
+      <main className="flex-1 flex flex-col pt-[110px] md:pt-[120px]">
         <section className="flex flex-col items-center justify-center px-[40px] pb-[32px] pt-[48px] text-center">
           <div className="mb-6 rounded-full bg-[var(--accent-light)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">
             AI-POWERED WIREFRAME TO CODE
@@ -172,151 +184,183 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="w-full px-[32px] pb-[48px]">
-          <div className="grid grid-cols-5 gap-6">
-            
-            <div className="col-span-2 flex flex-col glass-panel p-[28px]">
-              <div className="mb-4 flex items-center gap-2">
-                <span className="text-[13px] font-semibold uppercase tracking-widest text-[var(--accent)]">01</span>
-                <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Upload wireframe</h2>
-              </div>
+        <section className="w-full px-[24px] pb-[48px] md:px-[32px]">
+          <div className="mx-auto w-full max-w-[1440px]">
+            <div
+              className="rounded-[18px] p-[24px] md:p-[30px]"
+              style={{
+                background: "rgba(255, 255, 255, 0.78)",
+                border: "1px solid rgba(255, 255, 255, 0.85)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                boxShadow: "0 18px 60px rgba(10, 10, 10, 0.08)"
+              }}
+            >
+              <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="flex flex-col">
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">STEP 01</span>
+                    <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Upload wireframe</h2>
+                  </div>
 
-              <div
-                className="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden transition-all outline-none"
-                style={{
-                  height: "220px",
-                  borderRadius: "12px",
-                  border: "2px dashed rgba(124, 58, 237, 0.25)",
-                  background: "rgba(124, 58, 237, 0.03)"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.5)";
-                  e.currentTarget.style.background = "rgba(124, 58, 237, 0.06)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.25)";
-                  e.currentTarget.style.background = "rgba(124, 58, 237, 0.03)";
-                }}
-                onClick={handleBrowse}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleBrowse();
-                }}
-                aria-label="Upload wireframe image"
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => {
-                    const next = e.target.files?.[0] ?? null;
-                    setSelectedFile(next);
+                  <div
+                    className="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden transition-all outline-none"
+                    style={{
+                      height: "240px",
+                      borderRadius: "14px",
+                      border: "2px dashed rgba(124, 58, 237, 0.25)",
+                      background: "rgba(124, 58, 237, 0.03)"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.5)";
+                      e.currentTarget.style.background = "rgba(124, 58, 237, 0.06)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.25)";
+                      e.currentTarget.style.background = "rgba(124, 58, 237, 0.03)";
+                    }}
+                    onClick={handleBrowse}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") handleBrowse();
+                    }}
+                    aria-label="Upload wireframe image"
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => {
+                        const next = e.target.files?.[0] ?? null;
+                        setSelectedFile(next);
+                      }}
+                    />
+                    {preview ? (
+                      <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+                    ) : (
+                      <>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
+                          <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <div className="text-[16px] font-[600] text-[var(--text-primary)]">Drop your wireframe here</div>
+                        <div className="mt-1 text-[13px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
+                      </>
+                    )}
+                  </div>
+
+                  {fileMeta && (
+                    <div className="mt-2 text-[12px] text-[var(--text-secondary)]">
+                      {fileMeta.name} · {fileMeta.size}
+                    </div>
+                  )}
+
+                  <div className="mb-4 mt-8 flex items-center gap-2">
+                    <span className="text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">STEP 02</span>
+                    <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Describe your wireframe</h2>
+                  </div>
+
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={5}
+                    placeholder="E.g. A dashboard with a sidebar navigation and three stat cards at the top..."
+                    className="w-full resize-none rounded-[10px] border border-[var(--border)] bg-white outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
+                    style={{
+                      fontSize: "15px",
+                      padding: "14px 16px"
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={!canGenerate}
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] text-white transition-all disabled:pointer-events-none disabled:opacity-50"
+                    style={{
+                      height: "52px",
+                      fontSize: "16px",
+                      fontWeight: "700",
+                      background: "linear-gradient(135deg, #7C3AED, #9333EA)"
+                    }}
+                    onMouseEnter={(e) => {
+                      if (canGenerate) {
+                        e.currentTarget.style.background = "linear-gradient(135deg, #6D28D9, #7C3AED)";
+                        e.currentTarget.style.boxShadow = "0 4px 14px rgba(124, 58, 237, 0.35)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (canGenerate) {
+                        e.currentTarget.style.background = "linear-gradient(135deg, #7C3AED, #9333EA)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }
+                    }}
+                  >
+                    {isLoading ? (
+                      <>
+                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      "Generate component"
+                    )}
+                  </button>
+
+                  {error && (
+                    <div className="mt-4 rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] p-3 text-[13px] text-[#DC2626]">
+                      {error}
+                    </div>
+                  )}
+                </div>
+
+                <aside
+                  className="h-full rounded-[14px] p-5"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.02))",
+                    border: "1px solid rgba(124, 58, 237, 0.15)"
                   }}
-                />
-                {preview ? (
-                  <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-                ) : (
-                  <>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
-                      <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <div className="text-[16px] font-[600] text-[var(--text-primary)]">Drop your wireframe here</div>
-                    <div className="mt-1 text-[13px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
-                  </>
-                )}
+                >
+                  <div className="mb-3 text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">Workspace</div>
+                  <h3 className="text-[22px] font-[700] leading-[1.2] text-[var(--text-primary)]">Build a clean component preview flow</h3>
+                  <p className="mt-2 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
+                    Upload your sketch, add context, and generate. The live preview now appears below this workspace in a dedicated full-width area so it never overlaps with controls.
+                  </p>
+                  <div className="mt-6 rounded-[10px] border border-[rgba(124,58,237,0.2)] bg-white/80 p-3 text-[13px] text-[var(--text-secondary)]">
+                    {fileMeta ? `Selected: ${fileMeta.name}` : "No wireframe selected yet"}
+                  </div>
+                  <ul className="mt-5 space-y-2 text-[13px] text-[var(--text-secondary)]">
+                    <li>• Full-width preview below the workspace</li>
+                    <li>• Better separation between input and output</li>
+                    <li>• Responsive layout for laptop and mobile</li>
+                  </ul>
+                </aside>
               </div>
-              
-              {fileMeta && (
-                <div className="mt-2 text-[12px] text-[var(--text-secondary)]">
-                  {fileMeta.name} · {fileMeta.size}
-                </div>
-              )}
-
-              <div className="mb-4 mt-8 flex items-center gap-2">
-                <span className="text-[13px] font-semibold uppercase tracking-widest text-[var(--accent)]">02</span>
-                <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Describe your wireframe</h2>
-              </div>
-
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                placeholder="E.g. A dashboard with a sidebar navigation and three stat cards at the top..."
-                className="w-full resize-none rounded-[8px] border border-[var(--border)] bg-white outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
-                style={{
-                  fontSize: "15px",
-                  padding: "14px 16px"
-                }}
-              />
-
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={!canGenerate}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[8px] text-white transition-all disabled:pointer-events-none disabled:opacity-50"
-                style={{
-                  height: "52px",
-                  fontSize: "16px",
-                  fontWeight: "700",
-                  background: "linear-gradient(135deg, #7C3AED, #9333EA)"
-                }}
-                onMouseEnter={(e) => {
-                  if (canGenerate) {
-                    e.currentTarget.style.background = "linear-gradient(135deg, #6D28D9, #7C3AED)";
-                    e.currentTarget.style.boxShadow = "0 4px 14px rgba(124, 58, 237, 0.35)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (canGenerate) {
-                    e.currentTarget.style.background = "linear-gradient(135deg, #7C3AED, #9333EA)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }
-                }}
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Generating...
-                  </>
-                ) : (
-                  "Generate component"
-                )}
-              </button>
-
-              {error && (
-                <div className="mt-4 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] p-3 text-[13px] text-[#DC2626]">
-                  {error}
-                </div>
-              )}
             </div>
 
-            <div className="col-span-3 flex flex-col glass-panel p-[28px]" style={{ minHeight: "calc(100vh - 280px)" }}>
+            <div className="mt-8">
               {code.length === 0 && !isLoading ? (
                 <div
+                  className="rounded-[16px] border border-[rgba(255,255,255,0.85)] bg-white/70 px-6 py-16 text-center"
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minHeight: "calc(100vh - 340px)"
+                    minHeight: "320px",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)"
                   }}
-                  className="text-center"
                 >
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)]">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)] mx-auto">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--accent)]">
                       <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h3 className="text-[16px] font-[500] text-[var(--text-primary)]">Your component will appear here</h3>
-                  <p className="mt-1 text-[13px] text-[var(--text-hint)]">Generate a component to see the output</p>
+                  <h3 className="text-[18px] font-[600] text-[var(--text-primary)]">Live preview appears here</h3>
+                  <p className="mt-2 text-[13px] text-[var(--text-hint)]">Generate a component to render the full-browser preview</p>
                 </div>
               ) : (
                 <CodeDisplay
@@ -326,7 +370,6 @@ export default function HomePage() {
                 />
               )}
             </div>
-            
           </div>
         </section>
       </main>
