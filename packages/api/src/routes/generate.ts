@@ -50,6 +50,7 @@ async function streamGroqCompletion(args: {
 	description: string;
 	stream: StreamingApi;
 }): Promise<void> {
+	const context = args.context;
 	const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
 		method: "POST",
 		headers: {
@@ -59,27 +60,33 @@ async function streamGroqCompletion(args: {
 		body: JSON.stringify({
 			model: "meta-llama/llama-4-scout-17b-16e-instruct",
 			stream: true,
-			max_tokens: 2048,
+			max_tokens: 8192,
 			temperature: 0.2,
 			messages: [
 				{
 					role: "system",
 					content: `You are an expert Next.js and Tailwind CSS developer.
-Use these UI patterns as reference:
-${args.context}
 
-Rules:
-CRITICAL: Do NOT wrap the output in markdown code fences.
-Do NOT use backticks. Return raw JSX only, no \`\`\`jsx or \`\`\`tsx.
-1. ALWAYS start the component with a named function declaration like: function ComponentName() { — never use anonymous functions or arrow functions at the top level
-2. Return ONLY the JSX component code
-3. No markdown fences or backticks
-4. No import statements
-5. No explanation before or after the code
-6. Use Tailwind utility classes only
-7. Make it fully responsive
-8. Use semantic HTML elements
-9. CRITICAL: Always use: export default function ComponentName() {} at the end of your code. Sandpack requires a default export.`
+Use these UI patterns as reference:
+${context}
+
+CRITICAL RULES — follow every single one without exception:
+
+1. Start with: export default function ComponentName() {
+2. Return a SINGLE root element wrapping everything
+3. Use ONLY simple Tailwind classes — no arbitrary values like w-[123px]
+4. Keep the component SHORT and SIMPLE — maximum 80 lines total
+5. NO SVG icons — use plain text or emoji instead of any <svg> tags
+6. NO complex nested ternaries
+7. NO TypeScript types or interfaces — plain JavaScript only
+8. Use placeholder text like "Link 1", "Button", "Title" — keep it minimal
+9. Every JSX tag must be properly closed
+10. Do NOT use lucide-react or any external icon library
+11. Do NOT include comments in the code
+12. Return ONLY the component code — no markdown fences, no explanation
+13. The entire component must fit in 60-80 lines maximum
+
+Keep it simple. A clean simple component is better than a complex broken one.`
 				},
 				{
 					role: "user",

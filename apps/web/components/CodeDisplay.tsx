@@ -19,9 +19,27 @@ function cleanCode(raw: string): string {
 		.trim();
 }
 
+function getPreviewCode(raw: string): string {
+	const base = cleanCode(raw);
+	if (/export\s+default\s+/m.test(base)) return base;
+
+	const fnMatch = base.match(/function\s+([A-Za-z_$][\w$]*)\s*\(/);
+	if (fnMatch?.[1]) {
+		return `${base}\n\nexport default ${fnMatch[1]};`;
+	}
+
+	const constMatch = base.match(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[^=]*=>/);
+	if (constMatch?.[1]) {
+		return `${base}\n\nexport default ${constMatch[1]};`;
+	}
+
+	return base;
+}
+
 export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 	const [copied, setCopied] = useState<boolean>(false);
 	const [showPreview, setShowPreview] = useState<boolean>(false);
+	const [previewSource, setPreviewSource] = useState<string>("export default function Component(){ return <div />; }");
 
 	useEffect(() => {
 		if (!copied) return;
@@ -127,7 +145,12 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 			{/* Preview Toggle */}
 			<button
 				type="button"
-				onClick={() => setShowPreview(!showPreview)}
+				onClick={() => {
+					if (!showPreview) {
+						setPreviewSource(getPreviewCode(code));
+					}
+					setShowPreview(!showPreview);
+				}}
 				className="mt-[12px] w-full transition-colors"
 				style={{
 					padding: "10px 20px",
@@ -171,7 +194,7 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 					<SandpackProvider
 						template="react"
 						files={{
-							"/App.js": cleanCode(code)
+							"/App.js": previewSource
 						}}
 						options={{
 							externalResources: ["https://cdn.tailwindcss.com"],
