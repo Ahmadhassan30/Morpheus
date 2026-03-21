@@ -24,7 +24,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use(
 	"*",
 	cors({
-		origin: ["http://localhost:3000", "https://morpheus.vercel.app"],
+		origin: ["http://localhost:3000","http://localhost:3001", "https://morpheus.vercel.app", "https://morpheus-web.vercel.app"],
 		allowMethods: ["GET", "POST", "OPTIONS"],
 		allowHeaders: ["Content-Type"]
 	})
