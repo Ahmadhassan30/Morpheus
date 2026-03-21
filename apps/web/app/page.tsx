@@ -4,17 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeDisplay } from "../components/CodeDisplay";
 
-const COLORS = {
-  background: "#0a0a0a",
-  surface: "#111111",
-  border: "#2a2a2a",
-  text: "#f5f5f0",
-  muted: "#888884",
-  accent: "#D3FD50",
-  accentHover: "#bfe847",
-  error: "#ff4444"
-} as const;
-
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"] as const;
@@ -141,248 +130,154 @@ export default function HomePage() {
   };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: COLORS.background,
-        color: COLORS.text,
-        fontFamily: "system-ui, -apple-system, sans-serif"
-      }}
-    >
-      <header className="w-full border-b px-4 py-8 sm:px-6"
-        style={{ borderColor: COLORS.border }}
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div
-                className="text-[48px] font-bold leading-none"
-                style={{ letterSpacing: "-0.03em" }}
-              >
-                MORPHEUS
-              </div>
-              <div
-                className="mt-3 text-[14px] uppercase"
-                style={{ color: COLORS.muted, letterSpacing: "0.08em" }}
-              >
-                FROM DREAM TO DEPLOY
-              </div>
-            </div>
-
-            <div
-              className="select-none border px-3 py-1 text-[12px] font-semibold"
-              style={{
-                borderColor: COLORS.accent,
-                color: COLORS.accent,
-                borderRadius: 0
-              }}
-            >
-              BETA
-            </div>
-          </div>
+    <div className="min-h-screen relative flex flex-col font-sans">
+      <header className="flex h-[56px] w-full items-center justify-between border-b px-10 bg-[var(--bg-surface)] border-[var(--border)] shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-sm bg-[var(--accent)]" />
+          <span className="text-[16px] font-bold text-[var(--text-primary)]">Morpheus</span>
+        </div>
+        <div className="rounded-[4px] bg-[var(--accent-light)] px-2 py-[2px] text-[11px] font-semibold uppercase text-[var(--accent)] tracking-wide">
+          BETA
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-10 sm:px-6 lg:grid-cols-2">
-        <section
-          className="border p-6"
-          style={{ background: COLORS.surface, borderColor: COLORS.border }}
-        >
-          <div
-            className="text-[14px] uppercase"
-            style={{ color: COLORS.muted, letterSpacing: "0.08em" }}
-          >
-            INPUT
+      <main className="flex-1 flex flex-col">
+        <section className="flex flex-col items-center justify-center px-10 pb-[48px] pt-[80px] text-center">
+          <div className="mb-6 rounded-full bg-[var(--accent-light)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">
+            AI-POWERED WIREFRAME TO CODE
           </div>
-
-          <div
-            className="mt-4 flex h-[240px] w-full cursor-pointer items-center justify-center border border-dashed"
-            style={{ borderColor: COLORS.border, borderRadius: 0 }}
-            onClick={handleBrowse}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = COLORS.accent;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = COLORS.border;
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = COLORS.accent;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = COLORS.border;
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleBrowse();
-            }}
-            aria-label="Upload wireframe image"
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const next = e.target.files?.[0] ?? null;
-                setSelectedFile(next);
-              }}
-            />
-
-            {preview ? (
-              <img
-                src={preview}
-                alt="Wireframe preview"
-                className="h-full w-full object-cover"
-                draggable={false}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M12 16V4M12 4l-4 4M12 4l4 4"
-                    stroke={COLORS.muted}
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="miter"
-                  />
-                  <path
-                    d="M4 20h16"
-                    stroke={COLORS.muted}
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                  />
-                </svg>
-                <div className="mt-3 text-sm font-semibold">Drop your wireframe here</div>
-                <div className="mt-1 text-sm" style={{ color: COLORS.muted }}>
-                  or click to browse
-                </div>
-              </div>
-            )}
+          <h1 className="text-[56px] font-[800] leading-[1.1] tracking-[-0.03em] text-[var(--text-primary)]">
+            From sketch to<br/>
+            <span className="relative inline-block">
+              production
+              <span className="absolute bottom-2 left-0 -z-10 h-3 w-full bg-[var(--accent-light)]" />
+            </span> code.
+          </h1>
+          <p className="mt-5 text-[18px] font-[400] text-[var(--text-secondary)]">
+            Upload a wireframe. Get clean Next.js + Tailwind code instantly.
+          </p>
+          <div className="mt-8 flex items-center gap-2 text-[12px] text-[var(--text-hint)]">
+            <span>Powered by Groq</span>
+            <span>·</span>
+            <span>RAG with Qdrant</span>
+            <span>·</span>
+            <span>Free forever</span>
           </div>
-
-          {fileMeta ? (
-            <div className="mt-3 text-sm" style={{ color: COLORS.muted }}>
-              {fileMeta.name} · {fileMeta.size}
-            </div>
-          ) : null}
-
-          <label className="mt-6 block">
-            <div
-              className="text-[14px] uppercase"
-              style={{ color: COLORS.muted, letterSpacing: "0.08em" }}
-            >
-              DESCRIPTION
-            </div>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder="describe your wireframe — e.g. dashboard with sidebar navigation and stat cards at the top"
-              className="mt-2 w-full border px-3 py-2 text-[14px] leading-[1.6] outline-none"
-              style={{
-                background: COLORS.surface,
-                borderColor: COLORS.border,
-                color: COLORS.text,
-                borderRadius: 0,
-                resize: "none"
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = COLORS.accent;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = COLORS.border;
-              }}
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="mt-6 flex h-12 w-full items-center justify-center gap-3 border px-4 text-sm font-semibold"
-            style={{
-              borderColor: isLoading ? COLORS.border : COLORS.accent,
-              background: isLoading ? COLORS.surface : COLORS.accent,
-              color: isLoading ? COLORS.muted : "#000000",
-              borderRadius: 0,
-              opacity: canGenerate ? 1 : 0.55,
-              cursor: canGenerate ? "pointer" : "not-allowed"
-            }}
-            onMouseEnter={(e) => {
-              if (e.currentTarget.disabled) return;
-              if (!isLoading) e.currentTarget.style.background = COLORS.accentHover;
-            }}
-            onMouseLeave={(e) => {
-              if (e.currentTarget.disabled) return;
-              if (!isLoading) e.currentTarget.style.background = COLORS.accent;
-            }}
-          >
-            {isLoading ? (
-              <>
-                <span
-                  className="h-4 w-4 animate-spin"
-                  style={{
-                    border: `2px solid ${COLORS.border}`,
-                    borderTopColor: COLORS.accent,
-                    borderRadius: 0
-                  }}
-                />
-                <span>GENERATING...</span>
-              </>
-            ) : (
-              <span>GENERATE COMPONENT</span>
-            )}
-          </button>
-
-          {error ? (
-            <div
-              className="mt-4 border px-4 py-3 text-sm"
-              style={{ borderColor: COLORS.error, color: COLORS.error }}
-            >
-              {error}
-            </div>
-          ) : null}
         </section>
 
-        <section
-          className="border p-6"
-          style={{ background: COLORS.surface, borderColor: COLORS.border }}
-        >
-          <div
-            className="text-[14px] uppercase"
-            style={{ color: COLORS.muted, letterSpacing: "0.08em" }}
-          >
-            OUTPUT
-          </div>
-
-          <div className="mt-4">
-            {code.length === 0 && !isLoading ? (
-              <div
-                className="flex min-h-[300px] items-center justify-center border px-6 text-center text-sm"
-                style={{ borderColor: COLORS.border, color: COLORS.muted }}
-              >
-                Your generated component will appear here
+        <section className="mx-auto w-full max-w-[1200px] px-10 pb-16">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            
+            <div className="flex flex-col rounded-[12px] border border-[var(--border)] bg-[var(--bg-surface)] p-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">01</span>
+                <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Upload wireframe</h2>
               </div>
-            ) : (
-              <CodeDisplay code={code} isStreaming={isStreaming} />
-            )}
+
+              <div
+                className="group relative flex h-[200px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[12px] border-2 border-dashed border-[var(--border)] bg-[var(--bg-page)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-light)] focus:border-[var(--accent)] focus:bg-[var(--accent-light)] outline-none"
+                onClick={handleBrowse}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleBrowse();
+                }}
+                aria-label="Upload wireframe image"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const next = e.target.files?.[0] ?? null;
+                    setSelectedFile(next);
+                  }}
+                />
+                {preview ? (
+                  <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+                ) : (
+                  <>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
+                      <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <div className="text-[14px] font-medium text-[var(--text-primary)]">Drop your wireframe here</div>
+                    <div className="mt-1 text-[12px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
+                  </>
+                )}
+              </div>
+              
+              {fileMeta && (
+                <div className="mt-2 text-[12px] text-[var(--text-secondary)]">
+                  {fileMeta.name} · {fileMeta.size}
+                </div>
+              )}
+
+              <div className="mb-4 mt-8 flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">02</span>
+                <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Describe your wireframe</h2>
+              </div>
+
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder="E.g. A dashboard with a sidebar navigation and three stat cards at the top..."
+                className="w-full resize-none rounded-[8px] border border-[var(--border)] bg-[var(--bg-surface)] px-[14px] py-[12px] text-[14px] text-[var(--text-primary)] outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
+              />
+
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                className="mt-6 flex h-[48px] w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--accent)] text-[15px] font-semibold text-white transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:pointer-events-none disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-[var(--accent)]"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  "Generate component"
+                )}
+              </button>
+
+              {error && (
+                <div className="mt-4 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] p-3 text-[13px] text-[#DC2626]">
+                  {error}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col h-full rounded-[12px] border border-[var(--border)] bg-[var(--bg-surface)] p-[28px] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+              {code.length === 0 && !isLoading ? (
+                <div className="flex flex-1 flex-col items-center justify-center text-center py-[100px]">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)]">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--accent)]">
+                      <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-[16px] font-medium text-[var(--text-primary)]">Your component will appear here</h3>
+                  <p className="mt-1 text-[13px] text-[var(--text-hint)]">Generate a component to see the output</p>
+                </div>
+              ) : (
+                <CodeDisplay code={code} isStreaming={isStreaming} />
+              )}
+            </div>
+            
           </div>
         </section>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 pb-10 text-center text-sm sm:px-6">
-        <div style={{ color: COLORS.muted }}>
-          Built with LangChain, Qdrant, and Llama 4 Maverick · All services free tier
+      <footer className="w-full border-t border-[var(--border)] bg-[var(--bg-page)] py-[40px] text-center">
+        <div className="text-[12px] text-[var(--text-hint)]">
+          Built with LangChain · Qdrant · Groq · Next.js
         </div>
       </footer>
     </div>

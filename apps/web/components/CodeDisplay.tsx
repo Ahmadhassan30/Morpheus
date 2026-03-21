@@ -115,28 +115,27 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 	const copyDisabled = code.trim().length === 0;
 
 	return (
-		<div className="relative">
-			{isStreaming ? (
-				<div
-					className="absolute left-0 right-0 top-0 h-[2px] overflow-hidden"
-					aria-hidden="true"
-				>
-					<div
-						className="stream-bar h-full w-1/3"
-						style={{ background: COLORS.accent }}
-					/>
-				</div>
-			) : null}
-
+		<div className="relative flex flex-col">
+			{/* Top bar */}
 			<div
-				className="flex items-center justify-between border px-4 py-3"
-				style={{ borderColor: COLORS.border, background: COLORS.surface }}
+				className="flex items-center justify-between px-4 py-3"
+				style={{
+					background: "#1A1A18",
+					borderRadius: "12px 12px 0 0"
+				}}
 			>
-				<div
-					className="text-[14px] uppercase"
-					style={{ color: COLORS.muted, letterSpacing: "0.08em" }}
-				>
-					GENERATED COMPONENT
+				<div className="flex items-center gap-3">
+					<div className="flex items-center gap-1.5">
+						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#FF5F57" }} />
+						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#FFBD2E" }} />
+						<div className="h-[10px] w-[10px] rounded-full" style={{ background: "#28C840" }} />
+					</div>
+					<div
+						className="ml-2 text-[12px] font-medium"
+						style={{ color: "#6B6B63", fontFamily: "monospace" }}
+					>
+						Dashboard.tsx
+					</div>
 				</div>
 
 				<button
@@ -148,45 +147,52 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 							await navigator.clipboard.writeText(code);
 							setCopied(true);
 						} catch {
-							// If clipboard is blocked, keep UI stable (no extra error UI).
+							// If clipboard is blocked, keep UI stable.
 						}
 					}}
-					className="border px-3 py-1 text-xs font-semibold"
+					className="px-[10px] py-[4px] text-[11px] font-semibold uppercase transition-colors"
 					style={{
-						borderColor: COLORS.border,
+						border: "1px solid #333",
 						background: "transparent",
-						color: copyDisabled ? COLORS.muted : COLORS.text,
-						borderRadius: 0,
+						color: copied ? "white" : "#9D9D93",
+						borderRadius: "4px",
 						opacity: copyDisabled ? 0.55 : 1,
 						cursor: copyDisabled ? "not-allowed" : "pointer"
 					}}
 					onMouseEnter={(e) => {
-						if (copyDisabled) return;
-						e.currentTarget.style.borderColor = COLORS.accent;
-						e.currentTarget.style.color = COLORS.accent;
+						if (copyDisabled || copied) return;
+						e.currentTarget.style.color = "white";
 					}}
 					onMouseLeave={(e) => {
-						e.currentTarget.style.borderColor = COLORS.border;
-						e.currentTarget.style.color = copyDisabled ? COLORS.muted : COLORS.text;
+						if (copyDisabled || copied) return;
+						e.currentTarget.style.color = "#9D9D93";
 					}}
 				>
 					{copied ? "COPIED ✓" : "COPY"}
 				</button>
 			</div>
 
-			<div className="mt-4">
+			{/* Streaming indicator */}
+			{isStreaming ? (
+				<div className="absolute left-0 right-0 top-[44px] h-[2px] overflow-hidden" aria-hidden="true">
+					<div className="stream-bar h-full w-1/3" style={{ background: "#7C3AED" }} />
+				</div>
+			) : null}
+
+			{/* Code block */}
+			<div>
 				<SyntaxHighlighter
 					language="tsx"
 					style={vscDarkPlus}
 					showLineNumbers
 					customStyle={{
-						background: COLORS.background,
-						border: `1px solid ${COLORS.border}`,
-						borderRadius: 0,
+						background: "#1E1E1E",
+						border: "none",
+						borderRadius: showPreview ? "0" : "0 0 12px 12px",
 						fontSize: "13px",
 						fontFamily: '"Fira Code", "Cascadia Code", monospace',
 						minHeight: "300px",
-						maxHeight: "500px",
+						maxHeight: "520px",
 						overflowY: "auto",
 						margin: 0
 					}}
@@ -195,53 +201,46 @@ export function CodeDisplay({ code, isStreaming }: CodeDisplayProps) {
 				</SyntaxHighlighter>
 			</div>
 
+			{/* Preview Toggle */}
 			<button
 				type="button"
 				onClick={() => setShowPreview((v) => !v)}
-				className="mt-4 w-full border px-4 py-2 text-sm font-semibold"
+				className="mt-[12px] w-full border px-[16px] py-[8px] text-[13px] font-[500] transition-colors"
 				style={{
-					borderColor: COLORS.border,
-					background: "transparent",
-					color: COLORS.text,
-					borderRadius: 0
+					border: "1px solid #E4E4DF",
+					background: "white",
+					color: "#6B6B63",
+					borderRadius: "8px"
 				}}
 				onMouseEnter={(e) => {
-					e.currentTarget.style.borderColor = COLORS.accent;
-					e.currentTarget.style.color = COLORS.accent;
+					e.currentTarget.style.borderColor = "#7C3AED";
+					e.currentTarget.style.color = "#7C3AED";
 				}}
 				onMouseLeave={(e) => {
-					e.currentTarget.style.borderColor = COLORS.border;
-					e.currentTarget.style.color = COLORS.text;
+					e.currentTarget.style.borderColor = "#E4E4DF";
+					e.currentTarget.style.color = "#6B6B63";
 				}}
 			>
 				{showPreview ? "HIDE PREVIEW" : "SHOW PREVIEW"}
 			</button>
 
+			{/* Preview Box */}
 			{showPreview && (
-				<div style={{ marginTop: '12px' }}>
-					<p style={{
-						fontSize: '11px',
-						color: 'var(--color-text-tertiary)',
-						marginBottom: '8px',
-						fontFamily: 'monospace'
-					}}>
-						LIVE PREVIEW — rendered with React 18 + Tailwind CDN
-					</p>
+				<div className="mt-[12px]">
 					<iframe
 						srcDoc={buildPreviewHTML(code)}
 						style={{
-							width: '100%',
-							height: '500px',
-							border: '1px solid #2a2a2a',
-							borderRadius: '0',
-							background: 'white'
+							width: "100%",
+							height: "500px",
+							border: "1px solid #E4E4DF",
+							borderRadius: "0 0 12px 12px",
+							background: "white"
 						}}
 						sandbox="allow-scripts"
 						title="Component preview"
 					/>
 				</div>
 			)}
-
 		</div>
 	);
 }

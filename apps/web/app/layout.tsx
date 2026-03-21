@@ -23,11 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-		<body className="min-h-screen bg-[#0a0a0a] text-[#f5f5f0]">
-			<div
-				aria-hidden="true"
-				className="fixed left-0 top-0 z-50 h-[3px] w-full bg-[#D3FD50]"
-			/>
+		<head>
+			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+		</head>
+		<body className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
 			{children}
 		</body>
     </html>
