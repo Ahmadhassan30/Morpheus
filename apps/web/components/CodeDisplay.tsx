@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { transform } from "sucrase";
 
 export interface CodeDisplayProps {
 	code: string;
@@ -12,9 +13,10 @@ export interface CodeDisplayProps {
 // Extract component name in TypeScript (safe, outside template literal)
 function getComponentName(code: string): string | null {
 	const patterns = [
-		/function\s+([A-Z][a-zA-Z0-9]*)\s*\(/,
-		/const\s+([A-Z][a-zA-Z0-9]*)\s*=\s*(?:\(|React\.memo|forwardRef)/,
-		/var\s+([A-Z][a-zA-Z0-9]*)\s*=/
+		/function\s+([A-Za-z_$][\w$]*)\s*\(/,
+		/class\s+([A-Za-z_$][\w$]*)\s+extends\s+(?:React\.)?Component/,
+		/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*\(|\(|function\b|React\.memo|forwardRef)/,
+		/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[^=]*=>/
 	];
 	for (const pattern of patterns) {
 		const match = code.match(pattern);
@@ -27,51 +29,71 @@ function buildPreviewHTML(code: string): string {
 	const cleanCode = code
 		.replace(/^```[\w]*\n?/gm, "")
 		.replace(/^```$/gm, "")
-		.replace(/^import\s+.*$/gm, "")
+		.replace(/^["']use client["']\s*;?\s*/gm, "")
+		// Strip single-line, multiline, and side-effect imports before browser eval.
+		.replace(/^\s*import\s+[\s\S]*?from\s+["'][^"']+["']\s*;?\s*/gm, "")
+		.replace(/^\s*import\s+["'][^"']+["']\s*;?\s*/gm, "")
 		.replace(/^export\s+default\s+/gm, "")
 		.replace(/^export\s+/gm, "")
 		.trim();
 
-	const componentName = getComponentName(cleanCode);
+	const componentName = getComponentName(cleanCode) ?? "Component";
 
-	return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
-  <style>
-    body { margin: 0; padding: 16px; background: white; }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="text/babel" data-presets="react">
-    ${cleanCode}
+	let transformedCode = cleanCode;
+	try {
+		const result = transform(cleanCode, {
+			transforms: ["typescript", "jsx"],
+			jsxPragma: "React.createElement",
+			jsxFragmentPragma: "React.Fragment",
+			production: false
+		});
+		transformedCode = result.code;
+	} catch (e) {
+		return buildErrorHTML("JSX transform failed: " + (e instanceof Error ? e.message : String(e)));
+	}
 
-		(() => {
-			const root = ReactDOM.createRoot(document.getElementById('root'));
-			${componentName
-			? `
-			try {
-				root.render(React.createElement(${componentName}));
-			} catch(e) {
-				root.render(React.createElement('div', {
-					style: { color: '#DC2626', padding: '16px', fontFamily: 'monospace', fontSize: '13px' }
-				}, 'Render error: ' + e.message));
-			}`
-			: `
-			root.render(React.createElement('div', {
-				style: { color: '#D97706', padding: '16px', fontFamily: 'monospace', fontSize: '13px' }
-			}, 'Could not detect component name. Ensure the code includes a named function like function Dashboard() {}'));`
-		}
-		})();
-  <\/script>
-</body>
-</html>`
+	const fullScript = [
+		"const { useState, useEffect, useRef, useCallback, useMemo, Fragment } = React;",
+		"",
+		transformedCode,
+		"",
+		"try {",
+		"  const root = ReactDOM.createRoot(document.getElementById('root'));",
+		"  root.render(React.createElement(" + componentName + "));",
+		"} catch(e) {",
+		"  document.getElementById('root').innerHTML =",
+		"    '<div style=\"color:#DC2626;padding:16px;font-family:monospace;font-size:13px\">Render error: ' + e.message + '</div>';",
+		"}"
+	].join("\n");
+
+	return [
+		"<!DOCTYPE html>",
+		"<html>",
+		"<head>",
+		'  <meta charset="UTF-8" />',
+		'  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+		'  <script src="https://cdn.tailwindcss.com"><\/script>',
+		'  <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>',
+		'  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>',
+		"  <style>body { margin: 0; padding: 16px; background: white; }<\/style>",
+		"<\/head>",
+		"<body>",
+		'  <div id="root"><\/div>',
+		"  <script>",
+		fullScript,
+		"  <\/script>",
+		"<\/body>",
+		"<\/html>"
+	].join("\n");
+}
+
+function buildErrorHTML(message: string): string {
+	return [
+		"<!DOCTYPE html><html><body>",
+		'<div style="color:#DC2626;padding:16px;font-family:monospace;font-size:13px">',
+		message,
+		"</div></body></html>"
+	].join("");
 }
 
 const COLORS = {
