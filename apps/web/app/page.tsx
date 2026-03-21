@@ -25,6 +25,8 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [appLoaded, setAppLoaded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -33,6 +35,79 @@ export default function HomePage() {
       if (preview) URL.revokeObjectURL(preview);
     };
   }, [preview]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    let tl: any = null;
+
+    try {
+      const saved = localStorage.getItem("morpheus-theme") as
+        | "dark"
+        | "light"
+        | null;
+      if (saved) {
+        setTheme(saved);
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    } catch (e) {}
+
+    import("gsap").then(({ gsap }) => {
+      if (isCancelled) return;
+
+      const loaderEl = document.getElementById("morpheus-loader");
+      if (loaderEl) {
+        loaderEl.style.display = "flex";
+        loaderEl.style.opacity = "1";
+      }
+
+      tl = gsap.timeline({ onComplete: () => setAppLoaded(true) });
+
+      tl.fromTo(
+        "#loader-progress",
+        { width: "0%" },
+        { width: "100%", duration: 1.4, ease: "power2.inOut" }
+      );
+      tl.to("#morpheus-loader", {
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.in",
+        onComplete: () => {
+          const el = document.getElementById("morpheus-loader");
+          if (el) el.style.display = "none";
+        }
+      });
+      tl.from(
+        "#hero-line1",
+        { y: 100, opacity: 0, duration: 0.7, ease: "power3.out" },
+        "-=0.1"
+      );
+      tl.from(
+        "#hero-line2",
+        { y: 100, opacity: 0, duration: 0.7, ease: "power3.out" },
+        "-=0.55"
+      );
+      tl.from(
+        "#hero-line3",
+        { y: 100, opacity: 0, duration: 0.7, ease: "power3.out" },
+        "-=0.55"
+      );
+      tl.from(
+        "#hero-sub",
+        { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" },
+        "-=0.4"
+      );
+      tl.from(
+        "#main-panel",
+        { y: 50, opacity: 0, duration: 0.8, ease: "power3.out" },
+        "-=0.3"
+      );
+    });
+
+    return () => {
+      isCancelled = true;
+      if (tl) tl.kill();
+    };
+  }, []);
 
   const fileMeta = useMemo(() => {
     if (!file) return null;
@@ -129,271 +204,711 @@ export default function HomePage() {
     }
   };
 
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("morpheus-theme", next);
+    } catch (e) {}
+  };
+  const logoSrc = theme === "dark" ? "/logo_dark.png" : "/logo.png";
+
   return (
-    <div className="min-h-screen relative flex flex-col font-sans">
-      <header
+    <>
+      {/* LOADER */}
+      <div
+        id="morpheus-loader"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          height: '72px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.9)',
-          padding: '0 40px',
+          position: "fixed",
+          inset: 0,
+          background: "#0f0f0f",
+          zIndex: 9999,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 28
         }}
       >
         <img
-          src="/logo.png"
+          src="/logo_dark.png"
           alt="Morpheus"
-          style={{
-            height: '52px',
-            width: 'auto',
-            objectFit: 'contain',
-          }}
+          style={{ height: 56, width: "auto", objectFit: "contain" }}
         />
-      </header>
+        <div
+          style={{
+            width: 200,
+            height: 1,
+            background: "#242424",
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <div
+            id="loader-progress"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              height: "100%",
+              width: "0%",
+              background: "#ff6900"
+            }}
+          />
+        </div>
+        <span
+          style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 10,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "#444444"
+          }}
+        >
+          Loading
+        </span>
+      </div>
 
-      <main className="flex-1 flex flex-col pt-[72px]">
-        <section className="flex flex-col items-center justify-center px-[40px] pb-[32px] pt-[48px] text-center">
-          <div className="mb-6 rounded-full bg-[var(--accent-light)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--accent)]">
-            AI-POWERED WIREFRAME TO CODE
+      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+        {/* HEADER */}
+        <header
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            height: 132,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 48px",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--bg)"
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: 48,
+              top: "50%",
+              transform: "translateY(-50%)",
+              fontFamily: "var(--font-body)",
+              fontSize: 10,
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: "var(--text-dim)",
+              lineHeight: 1.6
+            }}
+          >
+            Vision to Interface
           </div>
-          <h1 className="text-[64px] font-[800] leading-[1.05] tracking-[-0.03em] text-[var(--text-primary)]">
-            From sketch to<br/>
-            <span
-              className="relative inline-block"
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 3
+            }}
+          >
+            <img
+              src={logoSrc}
+              alt="Morpheus"
               style={{
-                background: "linear-gradient(135deg, #7C3AED, #A855F7)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent"
+                height: "clamp(78px, 8vw, 100px)",
+                width: "auto",
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 18px rgba(255,105,0,0.14))"
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 18,
+                fontWeight: 700,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: "var(--text-primary)",
+                lineHeight: 1
               }}
             >
-              production
-            </span> code.
-          </h1>
-          <p className="mt-5 text-[20px] font-[400] text-[var(--text-secondary)]">
-            Upload a wireframe. Get clean Next.js + Tailwind code instantly.
-          </p>
-          <div className="mt-8 flex items-center gap-2 text-[12px] text-[var(--text-hint)]">
-            <span>Powered by Groq</span>
-            <span>·</span>
-            <span>RAG with Qdrant</span>
-            <span>·</span>
-            <span>Free forever</span>
+              Morpheus
+            </div>
           </div>
+
+          <div
+            style={{
+              position: "absolute",
+              right: 96,
+              top: "50%",
+              transform: "translateY(-50%)",
+              fontFamily: "var(--font-body)",
+              fontSize: 10,
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: "var(--text-dim)",
+              lineHeight: 1.6,
+              textAlign: "right"
+            }}
+          >
+            Sketch. Generate. Ship.
+          </div>
+          <button
+            onClick={toggleTheme}
+            style={{
+              position: "absolute",
+              right: 48,
+              width: 34,
+              height: 34,
+              border: "1px solid var(--border-mid)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              fontSize: 13,
+              fontFamily: "var(--font-body)",
+              transition: "border-color 0.15s, color 0.15s"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-mid)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            {theme === "dark" ? "◐" : "◑"}
+          </button>
+        </header>
+
+        {/* HERO */}
+        <section
+          style={{
+            paddingTop: 212,
+            paddingBottom: 64,
+            paddingLeft: 48,
+            paddingRight: 48
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--text-dim)",
+              marginBottom: 48,
+              fontFamily: "var(--font-body)"
+            }}
+          >
+            — Wireframe to Code
+          </div>
+
+          <div style={{ overflow: "hidden", marginBottom: 0 }}>
+            <div
+              id="hero-line1"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(80px, 13vw, 180px)",
+                fontWeight: 800,
+                lineHeight: 0.88,
+                letterSpacing: "0.01em",
+                color: "var(--text-primary)",
+                textTransform: "uppercase"
+              }}
+            >
+              SKETCH.
+            </div>
+          </div>
+
+          <div style={{ overflow: "hidden" }}>
+            <div
+              id="hero-line2"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(80px, 13vw, 180px)",
+                fontWeight: 800,
+                lineHeight: 0.88,
+                letterSpacing: "0.01em",
+                color: "var(--accent)",
+                textTransform: "uppercase"
+              }}
+            >
+              GENERATE.
+            </div>
+          </div>
+
+          <div style={{ overflow: "hidden", marginBottom: 48 }}>
+            <div
+              id="hero-line3"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(80px, 13vw, 180px)",
+                fontWeight: 800,
+                lineHeight: 0.88,
+                letterSpacing: "0.01em",
+                color: "var(--text-primary)",
+                textTransform: "uppercase"
+              }}
+            >
+              SHIP.
+            </div>
+          </div>
+
+          <p
+            id="hero-sub"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: 16,
+              fontWeight: 300,
+              color: "var(--text-secondary)",
+              maxWidth: 420,
+              lineHeight: 1.75
+            }}
+          >
+            Upload any wireframe. Get production-ready component code in
+            seconds. Free forever.
+          </p>
         </section>
 
-        <section className="w-full px-[24px] pb-[48px] md:px-[32px]">
-          <div className="mx-auto w-full max-w-[1440px]">
-            <div
-              className="rounded-[18px] p-[24px] md:p-[30px]"
-              style={{
-                background: "rgba(255, 255, 255, 0.78)",
-                border: "1px solid rgba(255, 255, 255, 0.85)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                boxShadow: "0 18px 60px rgba(10, 10, 10, 0.08)"
-              }}
-            >
-              <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-                <div className="flex flex-col">
-                  <div className="mb-4 flex items-center gap-2">
-                    <span className="text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">STEP 01</span>
-                    <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Upload wireframe</h2>
-                  </div>
+        {/* DIVIDER */}
+        <div style={{ height: 1, background: "var(--border)", margin: "0 48px" }} />
 
-                  <div
-                    className="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden transition-all outline-none"
+        {/* MAIN WORK AREA */}
+        <section
+          id="main-panel"
+          style={{
+            padding: "64px 48px",
+            maxWidth: 1440,
+            margin: "0 auto"
+          }}
+        >
+          {/* INPUT LABEL */}
+          <div
+            style={{
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              borderBottom: "none",
+              padding: "10px 14px",
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--text-dim)",
+              fontFamily: "var(--font-body)"
+            }}
+          >
+            01 — Input
+          </div>
+
+          {/* INPUT PANEL */}
+          <div
+            style={{
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              padding: 40
+            }}
+          >
+              {/* Upload zone */}
+              <div
+                onClick={handleBrowse}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                style={{
+                  height: 196,
+                  border: "1px solid var(--border-mid)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                  marginBottom: 12,
+                  transition: "border-color 0.15s, background 0.15s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--accent)";
+                  e.currentTarget.style.background = "var(--bg-raised)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-mid)";
+                  e.currentTarget.style.background = "transparent";
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleBrowse();
+                }}
+                aria-label="Upload wireframe"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                />
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Preview"
                     style={{
-                      height: "240px",
-                      borderRadius: "14px",
-                      border: "2px dashed rgba(124, 58, 237, 0.25)",
-                      background: "rgba(124, 58, 237, 0.03)"
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover"
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.5)";
-                      e.currentTarget.style.background = "rgba(124, 58, 237, 0.06)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.border = "2px dashed rgba(124, 58, 237, 0.25)";
-                      e.currentTarget.style.background = "rgba(124, 58, 237, 0.03)";
-                    }}
-                    onClick={handleBrowse}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") handleBrowse();
-                    }}
-                    aria-label="Upload wireframe image"
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => {
-                        const next = e.target.files?.[0] ?? null;
-                        setSelectedFile(next);
+                    draggable={false}
+                  />
+                ) : (
+                  <>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: 48,
+                        color: "var(--accent)",
+                        lineHeight: 1,
+                        marginBottom: 10,
+                        fontWeight: 800
+                      }}
+                    >
+                      +
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-secondary)",
+                        letterSpacing: "0.08em",
+                        fontFamily: "var(--font-body)"
+                      }}
+                    >
+                      Drop wireframe or click to browse
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "var(--text-dim)",
+                        marginTop: 4,
+                        fontFamily: "var(--font-body)"
+                      }}
+                    >
+                      PNG, JPG — max 10MB
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {fileMeta && (
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "var(--text-dim)",
+                    marginBottom: 24,
+                    letterSpacing: "0.08em",
+                    fontFamily: "var(--font-body)"
+                  }}
+                >
+                  {fileMeta.name} · {fileMeta.size}
+                </div>
+              )}
+
+              {/* Describe label */}
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--text-dim)",
+                  marginBottom: 10,
+                  marginTop: fileMeta ? 0 : 28,
+                  fontFamily: "var(--font-body)"
+                }}
+              >
+                Describe
+              </div>
+
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                placeholder="navbar with sidebar, stat cards, data table..."
+                style={{
+                  width: "100%",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-mid)",
+                  color: "var(--text-primary)",
+                  fontFamily: "var(--font-body)",
+                  fontSize: 14,
+                  padding: "12px 14px",
+                  resize: "none",
+                  outline: "none",
+                  marginBottom: 20,
+                  lineHeight: 1.6,
+                  transition: "border-color 0.15s"
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border-mid)")}
+              />
+
+              {/* GENERATE BUTTON */}
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                style={{
+                  width: "100%",
+                  height: 52,
+                  background: canGenerate ? "var(--accent)" : "var(--bg-card)",
+                  color: canGenerate ? "var(--accent-text)" : "var(--text-dim)",
+                  border: canGenerate ? "none" : "1px solid var(--border-mid)",
+                  fontFamily: "var(--font-display)",
+                  fontSize: 24,
+                  fontWeight: 800,
+                  letterSpacing: "0.05em",
+                  cursor: canGenerate ? "pointer" : "not-allowed",
+                  transition: "background 0.15s, transform 0.1s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10
+                }}
+                onMouseEnter={(e) => {
+                  if (canGenerate) {
+                    e.currentTarget.style.background = "var(--accent-alt)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (canGenerate) e.currentTarget.style.background = "var(--accent)";
+                }}
+                onMouseDown={(e) => {
+                  if (canGenerate) e.currentTarget.style.transform = "scale(0.99)";
+                }}
+                onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              >
+                {isLoading ? (
+                  <>
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        border: "2px solid var(--accent-text)",
+                        borderTopColor: "transparent",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        animation: "spin 0.8s linear infinite"
                       }}
                     />
-                    {preview ? (
-                      <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-                    ) : (
-                      <>
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 text-[var(--accent)]">
-                          <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M4 20h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <div className="text-[16px] font-[600] text-[var(--text-primary)]">Drop your wireframe here</div>
-                        <div className="mt-1 text-[13px] text-[var(--text-hint)]">PNG, JPG up to 10MB</div>
-                      </>
-                    )}
-                  </div>
+                    GENERATING
+                  </>
+                ) : (
+                  "GENERATE"
+                )}
+              </button>
 
-                  {fileMeta && (
-                    <div className="mt-2 text-[12px] text-[var(--text-secondary)]">
-                      {fileMeta.name} · {fileMeta.size}
-                    </div>
-                  )}
-
-                  <div className="mb-4 mt-8 flex items-center gap-2">
-                    <span className="text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">STEP 02</span>
-                    <h2 className="text-[18px] font-[700] text-[var(--text-primary)]">Describe your wireframe</h2>
-                  </div>
-
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={5}
-                    placeholder="E.g. A dashboard with a sidebar navigation and three stat cards at the top..."
-                    className="w-full resize-none rounded-[10px] border border-[var(--border)] bg-white outline-none transition-shadow placeholder:text-[var(--text-hint)] focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/10"
-                    style={{
-                      fontSize: "15px",
-                      padding: "14px 16px"
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={!canGenerate}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] text-white transition-all disabled:pointer-events-none disabled:opacity-50"
-                    style={{
-                      height: "52px",
-                      fontSize: "16px",
-                      fontWeight: "700",
-                      background: "linear-gradient(135deg, #7C3AED, #9333EA)"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (canGenerate) {
-                        e.currentTarget.style.background = "linear-gradient(135deg, #6D28D9, #7C3AED)";
-                        e.currentTarget.style.boxShadow = "0 4px 14px rgba(124, 58, 237, 0.35)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (canGenerate) {
-                        e.currentTarget.style.background = "linear-gradient(135deg, #7C3AED, #9333EA)";
-                        e.currentTarget.style.boxShadow = "none";
-                      }
-                    }}
-                  >
-                    {isLoading ? (
-                      <>
-                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Generating...
-                      </>
-                    ) : (
-                      "Generate component"
-                    )}
-                  </button>
-
-                  {error && (
-                    <div className="mt-4 rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] p-3 text-[13px] text-[#DC2626]">
-                      {error}
-                    </div>
-                  )}
-                </div>
-
-                <aside
-                  className="h-full rounded-[14px] p-5"
-                  style={{
-                    background: "linear-gradient(180deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.02))",
-                    border: "1px solid rgba(124, 58, 237, 0.15)"
-                  }}
-                >
-                  <div className="mb-3 text-[12px] font-semibold uppercase tracking-widest text-[var(--accent)]">Workspace</div>
-                  <h3 className="text-[22px] font-[700] leading-[1.2] text-[var(--text-primary)]">Build a clean component preview flow</h3>
-                  <p className="mt-2 text-[14px] leading-[1.6] text-[var(--text-secondary)]">
-                    Upload your sketch, add context, and generate. The live preview now appears below this workspace in a dedicated full-width area so it never overlaps with controls.
-                  </p>
-                  <div className="mt-6 rounded-[10px] border border-[rgba(124,58,237,0.2)] bg-white/80 p-3 text-[13px] text-[var(--text-secondary)]">
-                    {fileMeta ? `Selected: ${fileMeta.name}` : "No wireframe selected yet"}
-                  </div>
-                  <ul className="mt-5 space-y-2 text-[13px] text-[var(--text-secondary)]">
-                    <li>• Full-width preview below the workspace</li>
-                    <li>• Better separation between input and output</li>
-                    <li>• Responsive layout for laptop and mobile</li>
-                  </ul>
-                </aside>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              {code.length === 0 && !isLoading ? (
+              {error && (
                 <div
-                  className="rounded-[16px] border border-[rgba(255,255,255,0.85)] bg-white/70 px-6 py-16 text-center"
                   style={{
-                    minHeight: "320px",
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)"
+                    marginTop: 14,
+                    padding: "12px 14px",
+                    border: "1px solid var(--accent-alt)",
+                    background: "rgba(237,32,36,0.05)",
+                    fontSize: 12,
+                    color: "var(--accent-alt)",
+                    fontFamily: "var(--font-body)",
+                    lineHeight: 1.5
                   }}
                 >
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-light)] mx-auto">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[var(--accent)]">
-                      <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h3 className="text-[18px] font-[600] text-[var(--text-primary)]">Live preview appears here</h3>
-                  <p className="mt-2 text-[13px] text-[var(--text-hint)]">Generate a component to render the full-browser preview</p>
+                  {error}
                 </div>
-              ) : (
-                <CodeDisplay
-                  code={code}
-                  isStreaming={isStreaming}
-                  autoShow={!isStreaming && code.length > 0}
-                />
               )}
-            </div>
+          </div>
+
+          {/* OUTPUT LABEL */}
+          <div
+            style={{
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              borderTop: "none",
+              borderBottom: "none",
+              marginTop: 28,
+              padding: "10px 14px",
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--text-dim)",
+              fontFamily: "var(--font-body)"
+            }}
+          >
+            02 — Output
+          </div>
+
+          {/* FULL-WIDTH OUTPUT PANEL */}
+          <div
+            style={{
+              width: "100%",
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              minHeight: 520,
+              padding: 32
+            }}
+          >
+            {code.length === 0 && !isLoading ? (
+              <div
+                style={{
+                  height: "100%",
+                  minHeight: 420,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px dashed var(--border-mid)",
+                  gap: 14
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 72,
+                    color: "var(--text-dim)",
+                    lineHeight: 1,
+                    fontWeight: 800
+                  }}
+                >
+                  ?
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: "var(--text-dim)",
+                    fontFamily: "var(--font-body)"
+                  }}
+                >
+                  Awaiting generation
+                </div>
+              </div>
+            ) : (
+              <CodeDisplay
+                code={code}
+                isStreaming={isStreaming}
+                autoShow={!isStreaming && code.length > 0}
+              />
+            )}
           </div>
         </section>
-      </main>
 
-      <footer
-        className="w-full py-[40px] text-center"
-        style={{
-          background: "rgba(255, 255, 255, 0.5)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          borderTop: "1px solid rgba(255, 255, 255, 0.8)",
-          fontSize: "13px"
-        }}
-      >
-        <div className="text-[var(--text-hint)]">
-          Built with LangChain · Qdrant · Groq · Next.js
-        </div>
-      </footer>
-    </div>
+        {/* BOTTOM DIVIDER */}
+        <div style={{ height: 1, background: "var(--border)", margin: "0 48px" }} />
+
+        {/* FOOTER */}
+        <footer
+          style={{
+            padding: "56px 48px",
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
+            alignItems: "end",
+            gap: 40
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                color: "var(--text-dim)",
+                lineHeight: 1.8,
+                maxWidth: 160,
+                fontFamily: "var(--font-body)"
+              }}
+            >
+              Sketch to production.
+              <br />
+              No friction. No cost.
+            </p>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(36px, 5vw, 72px)",
+                fontWeight: 800,
+                lineHeight: 0.9,
+                letterSpacing: "0.02em",
+                color: "var(--text-primary)",
+                textTransform: "uppercase"
+              }}
+            >
+              DREAM.
+              <br />
+              <span style={{ color: "var(--accent)" }}>DEPLOY.</span>
+            </div>
+          </div>
+
+          <div style={{ textAlign: "right" }}>
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--text-dim)",
+                marginBottom: 8,
+                fontFamily: "var(--font-body)"
+              }}
+            >
+              Made by
+            </div>
+            <a
+              href="https://ahmadhassan.engineer"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 22,
+                fontWeight: 800,
+                color: "var(--text-primary)",
+                textDecoration: "none",
+                letterSpacing: "0.05em",
+                borderBottom: "1px solid var(--border-mid)",
+                paddingBottom: 2,
+                transition: "color 0.15s, border-color 0.15s",
+                display: "inline-block"
+              }}
+              onMouseEnter={(e) => {
+                const el = e.target as HTMLAnchorElement;
+                el.style.color = "var(--accent)";
+                el.style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.target as HTMLAnchorElement;
+                el.style.color = "var(--text-primary)";
+                el.style.borderColor = "var(--border-mid)";
+              }}
+            >
+              AHMAD HASSAN
+            </a>
+            <div
+              style={{
+                marginTop: 10,
+                fontSize: 10,
+                color: "var(--text-dim)",
+                fontFamily: "var(--font-body)"
+              }}
+            >
+              © 2026 Morpheus
+            </div>
+          </div>
+        </footer>
+      </div>
+      <span style={{ display: "none" }} aria-hidden="true">
+        {appLoaded ? "loaded" : "loading"}
+      </span>
+    </>
   );
 }
