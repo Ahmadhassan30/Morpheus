@@ -22,29 +22,50 @@ export interface CodeDisplayProps {
 }
 
 function cleanCode(raw: string): string {
-	return raw
-		.replace(/^```[\w]*\n?/gm, "")
-		.replace(/^```$/gm, "")
-		.replace(/^["']use client["']\s*;?\s*/gm, "")
-		.replace(/^import\s+.*$/gm, "")
-		.trim();
-}
+	let code = raw
+		// Strip markdown fences
+		.replace(/^```[\w]*\n?/gm, '')
+		.replace(/^```$/gm, '')
+		// Strip "use client"
+		.replace(/^["']use client["']\s*;?\s*/gm, '')
+		// Strip import statements
+		.replace(/^import\s+.*$/gm, '')
+		// Strip export default on its own
+		.replace(/^export\s+default\s+(?!function)/gm, '')
+		// CRITICAL: Strip stray language tags like "jsx", "tsx", "js"
+		// that Groq sometimes outputs as the first line
+		.replace(/^(jsx|tsx|js|ts|javascript|typescript)\s*\n/i, '')
+		// Strip any line that is ONLY a language word
+		.replace(/^(jsx|tsx|js|ts)\s*$/gim, '')
+		.trim()
 
-function getPreviewCode(raw: string): string {
-	const base = cleanCode(raw);
-	if (/export\s+default\s+/m.test(base)) return base;
+	// Fix truncated code - balance braces
+	const openBraces = (code.match(/\{/g) || []).length
+	const closeBraces = (code.match(/\}/g) || []).length
+	const openParens = (code.match(/\(/g) || []).length
+	const closeParens = (code.match(/\)/g) || []).length
 
-	const fnMatch = base.match(/function\s+([A-Za-z_$][\w$]*)\s*\(/);
-	if (fnMatch?.[1]) {
-		return `${base}\n\nexport default ${fnMatch[1]};`;
+	if (closeBraces < openBraces || closeParens < openParens) {
+		const missingParens = Math.max(0, openParens - closeParens)
+		const missingBraces = Math.max(0, openBraces - closeBraces)
+		code = code
+			+ '\n'
+			+ ')'.repeat(missingParens)
+			+ '\n'
+			+ '}'.repeat(missingBraces)
 	}
 
-	const constMatch = base.match(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*[^=]*=>/);
-	if (constMatch?.[1]) {
-		return `${base}\n\nexport default ${constMatch[1]};`;
+	// Ensure default export
+	if (!code.includes('export default')) {
+		const match = code.match(/function\s+([A-Z][a-zA-Z0-9]*)\s*\(/)
+		if (match) {
+			code = code + '\nexport default ' + match[1] + ';'
+		}
 	}
 
-	return base;
+	// Prepend React import for Sandpack classic mode
+	const reactImport = "import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';\n\n"
+	return reactImport + code
 }
 
 export function CodeDisplay({ code, isStreaming, autoShow }: CodeDisplayProps) {
@@ -244,23 +265,22 @@ export function CodeDisplay({ code, isStreaming, autoShow }: CodeDisplayProps) {
 					<SandpackProvider
 						template="react"
 						files={{
-							"/App.js": getPreviewCode(code)
+							"/App.js": cleanCode(code),
+						}}
+						customSetup={{
+							dependencies: {
+								react: "18.2.0",
+								"react-dom": "18.2.0",
+							},
 						}}
 						options={{
 							externalResources: ["https://cdn.tailwindcss.com"],
 							autorun: true,
 							autoReload: true,
 							recompileMode: "delayed",
-							recompileDelay: 500,
-							bundlerURL: undefined
+							recompileDelay: 300,
 						}}
 						theme="light"
-						customSetup={{
-							dependencies: {
-								react: "^18.0.0",
-								"react-dom": "^18.0.0"
-							}
-						}}
 					>
 						<SandpackPreview
 							style={{
